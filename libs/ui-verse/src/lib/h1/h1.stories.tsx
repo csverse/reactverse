@@ -9,7 +9,7 @@ export default meta;
 type Story = StoryObj<typeof H1>;
 
 export const h1 = ({ ...args }) => {
-  return <H1>Welcome to UiVerse H1 tag</H1>;
+  return <H1 className="h1">Welcome to UiVerse H1 tag</H1>;
 };
 
 export const h2: Story = {
