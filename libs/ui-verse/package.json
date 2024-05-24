@@ -1,0 +1,15 @@
+{
+  "name": "ui-verse",
+  "version": "0.0.3",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.js"
+    }
+  },
+  "scripts": {
+    "chromatic": "npx chromatic --project-token=chpt_214bde9d398915d -d=storybook-static"
+  }
+}

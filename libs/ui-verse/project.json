@@ -1,0 +1,9 @@
+{
+  "name": "ui-verse",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui-verse/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project ui-verse --web",
+  "targets": {}
+}
