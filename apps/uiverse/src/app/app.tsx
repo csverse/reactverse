@@ -1,12 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import styles from './app.module.scss';
-import { UiVerse, H1 } from 'ui-verse';
+import { H1, Input } from 'ui-verse';
 
 export function App() {
   return (
     <div>
-      <UiVerse />
-      <H1 className="newclass">hey there what's up</H1>
+      <H1>Hey there its using tailwind, mantine</H1>
+      <Input style={{ width: '300px' }} variant="filled" />
     </div>
   );
 }
