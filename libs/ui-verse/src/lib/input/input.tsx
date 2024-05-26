@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import styles from './input.module.scss';
 import {
-  ButtonProps,
   ElementProps,
   Input as InputComponent,
   InputProps,
@@ -10,7 +9,7 @@ import {
 /* eslint-disable-next-line */
 export interface InputPropsType
   extends InputProps,
-    ElementProps<'input', keyof ButtonProps> {
+    ElementProps<'input', keyof InputProps> {
   children?: ReactNode;
 }
 
