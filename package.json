@@ -2,7 +2,9 @@
   "name": "@reactverse/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build-storybook": "npx nx run ui-verse:build-storybook"
+  },
   "private": false,
   "dependencies": {
     "next": "14.2.3",

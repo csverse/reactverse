@@ -31,6 +31,16 @@ jobs:
       - run: npm ci
       - uses: nrwl/nx-set-shas@v4
 
+      - name: Prebuild Storybook
+        run: npm run build-storybook
+
+      - name: Publish to Chromatic
+        uses: chromaui/action@latest
+        with:
+          workingDir: libs/ui-verse
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          storybookBuildDir : storybook-static
+
       # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
       # - run: npx nx-cloud record -- echo Hello World
       - run: npx nx affected -t lint test build
