@@ -9,7 +9,5 @@
       "require": "./index.js"
     }
   },
-  "scripts": {
-    "chromatic": "npx chromatic --project-token=chpt_214bde9d398915d -d=storybook-static"
-  }
+  "scripts": {}
 }
