@@ -67,6 +67,21 @@
       "options": {
         "buildTargetName": "build"
       }
+    },
+    {
+      "plugin": "@nx/next/plugin",
+      "options": {
+        "startTargetName": "start",
+        "buildTargetName": "build",
+        "devTargetName": "dev",
+        "serveStaticTargetName": "serve-static"
+      }
+    },
+    {
+      "plugin": "@nx/playwright/plugin",
+      "options": {
+        "targetName": "e2e"
+      }
     }
   ],
   "generators": {
@@ -85,6 +100,12 @@
         "linter": "eslint",
         "unitTestRunner": "jest"
       }
+    },
+    "@nx/next": {
+      "application": {
+        "style": "css",
+        "linter": "eslint"
+      }
     }
   },
   "nxCloudAccessToken": "YjZmYjM0MDQtZjcxYy00NzExLTg4NjYtNjhmZTQ1Y2I4YmJjfHJlYWQtd3JpdGU=",
@@ -93,6 +114,9 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
+    },
+    "build-custom-server": {
+      "cache": true
     }
   }
 }

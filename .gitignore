@@ -41,3 +41,7 @@ Thumbs.db
 .nx/cache
 
 storybook-static
+
+# Next.js
+.next
+out
