@@ -8,7 +8,7 @@ export const Download = () => {
     <div className={styles['download']}>
       <span data-text='text'>Download My Resume 💁‍♂️</span>
       <span data-btn='button'>
-          <a href={resume} target="_blank">
+        <a href={resume} target="_blank" rel="noreferrer">
           <Button className={styles['download-btn']}>Download</Button>
         </a>
       </span>
