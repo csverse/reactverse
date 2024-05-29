@@ -7,6 +7,7 @@ export const Header = () => {
       <div className={styles['title-container']}>
         <span data-title="heading">Hi, I'm <em>Neel Ratn</em></span>
         <span data-sub-title="sub-heading">I am a Software Engineer specializing in architecting, and developing end-to-end frontend solutions</span>
+        
         <span data-link="link">
           <a href='' src=''>email</a>
           <a>github</a>
