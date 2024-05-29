@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('./assets/styles/font.scss');
+
+// variables
+$text-color: #222425;
+$bg-primary: #45CCEE;
+
+.sbdocs-wrapper {
+  background-color: rgb(34, 36, 37) !important;
+
+  .sbdocs-content {
+    background-color: rgb(34, 36, 37) !important;
+  }
+}

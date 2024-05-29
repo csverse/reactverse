@@ -8,7 +8,10 @@ type TemplateProps<P> = P & {
 export const Template = <P extends NonNullable<unknown>>(
   props: TemplateProps<P>
 ) => {
-  return <MantineProvider>{props.children}</MantineProvider>;
+  return (
+    <MantineProvider>
+      {props.children}
+    </MantineProvider>)
 };
 
 export default Template;
