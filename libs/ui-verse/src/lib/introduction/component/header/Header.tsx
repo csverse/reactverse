@@ -5,8 +5,14 @@ export const Header = () => {
   return (
     <div className={styles['header']}>
       <div className={styles['title-container']}>
-        <span data-title="heading">Hi <em>I'm </em>Neel Ratn</span>
+        <span data-title="heading">Hi, I'm <em>Neel Ratn</em></span>
         <span data-sub-title="sub-heading">I am a Software Engineer specializing in architecting, and developing end-to-end frontend solutions</span>
+        <span data-link="link">
+          <a href='' src=''>email</a>
+          <a>github</a>
+          <a>linkedin</a>
+          <a>instagram</a>
+        </span>
       </div>
       <div className={styles['profile_photo_container']}>
         <div className={styles['img_container']}>
