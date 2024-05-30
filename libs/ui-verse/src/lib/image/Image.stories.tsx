@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Image } from './Image';
+import { Image, ImagePropsType } from './Image';
+import Template from '../utils/hoc/Template';
 
 const meta: Meta<typeof Image> = {
   component: Image,
@@ -8,6 +9,10 @@ const meta: Meta<typeof Image> = {
 export default meta;
 type Story = StoryObj<typeof Image>;
 
-export const Primary = {
-  args: {},
+export const Primary = (props: ImagePropsType) => {
+  return (
+    <Template>
+      <Image {...props} />
+    </Template>
+  );
 };
