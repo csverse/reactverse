@@ -11,44 +11,6 @@ permissions:
   contents: read
 
 jobs:
-  update-cache:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Cache Time
-        run: |
-          mkdir -p ./cache
-          previous_date=$(cat ./cache/time || echo "No previous date")
-          current_date=$(date "+%Y-%m-%d %H:%M:%S")
-          echo "Previous: $previous_date"
-          echo "Current: $current_date"
-          echo "$current_date" > ./cache/time
-
-      - name: Restore Cache
-        id: cache-restore
-        uses: actions/cache/restore@v3
-        with:
-          path: ./cache
-          key: cache-key-${{ hashFiles('cache/time') }}
-
-      - name: Delete Previous Cache
-        if: ${{ steps.cache-restore.outputs.cache-hit == 'false' }}
-        continue-on-error: true
-        run: |
-          gh extension install actions/gh-actions-cache
-          gh actions-cache delete "cache-key-${{ hashFiles('cache/time') }}" --confirm
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Save Cache
-        uses: actions/cache/save@v3
-        with:
-          path: ./cache
-          key: cache-key-${{ hashFiles('cache/time') }}
-
   main:
     runs-on: ubuntu-latest
     steps:
@@ -71,9 +33,11 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
 
       - name: Prebuild Storybook
+        if: contains(github.event.head_commit.message, '--publish=uiverse --version=')
         run: npm run build-storybook
 
       - name: Publish to Chromatic
+        if: contains(github.event.head_commit.message, '--publish=uiverse --version=')
         uses: chromaui/action@latest
         with:
           workingDir: libs/ui-verse
