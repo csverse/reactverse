@@ -5,6 +5,7 @@ import {
   ButtonProps,
   ElementProps,
 } from '@mantine/core';
+import Template from '../utils/hoc/Template';
 
 /* eslint-disable-next-line */
 export interface ButtonPropsType
@@ -14,7 +15,11 @@ export interface ButtonPropsType
 }
 
 export function Button(props: ButtonPropsType) {
-  return <ButtonComponent>{props.children}</ButtonComponent>;
+  return (
+    <Template>
+      <ButtonComponent>{props.children}</ButtonComponent>
+    </Template>
+  )
 }
 
 export default Button;
