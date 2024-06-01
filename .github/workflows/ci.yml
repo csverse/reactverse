@@ -42,22 +42,12 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           storybookBuildDir : storybook-static
 
-      - name: Prebuild ui-verse minor
-        if: contains(github.event.head_commit.message, '[ui-verse-minor]')
-        run: npm run build-minor
-        working-directory: libs/ui-verse
-
-      - name: Prebuild ui-verse patch
-        if: contains(github.event.head_commit.message, '[ui-verse-patch]')
-        run: npm run build-patch
-        working-directory: libs/ui-verse
-
-      - name: Prebuild ui-verse major
-        if: contains(github.event.head_commit.message, '[ui-verse-major]')
-        run: npm run build-major
-        working-directory: libs/ui-verse
+      - name: Prebuild ui-verse
+        if: contains(github.event.head_commit.message, '--publish=uiverse --version=')
+        run: npm run build-ui-verse
 
       - name: Publish to npm
+        if: contains(github.event.head_commit.message, '--publish=uiverse --version=')
         run: npm publish --access public
         working-directory: dist/libs/ui-verse
         env:
