@@ -99,7 +99,7 @@
     "postcss-simple-vars": "^7.0.1",
     "prettier": "^2.6.2",
     "recharts": "^2.12.7",
-    "sass": "1.62.1",
+    "sass": "^1.55.0",
     "storybook": "7.6.19",
     "tailwindcss": "3.4.3",
     "ts-jest": "^29.1.0",
