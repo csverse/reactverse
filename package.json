@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build-storybook": "npx nx run ui-verse:build-storybook"
+    "build-storybook": "npx nx run ui-verse:build-storybook --skip-nx-cache"
   },
   "private": false,
   "dependencies": {
