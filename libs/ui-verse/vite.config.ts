@@ -28,6 +28,7 @@ export default defineConfig({
   build: {
     outDir: '../../dist/libs/ui-verse',
     emptyOutDir: true,
+    sourcemap: true,
     reportCompressedSize: true,
     commonjsOptions: {
       transformMixedEsModules: true,
