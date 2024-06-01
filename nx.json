@@ -21,6 +21,20 @@
     ],
     "sharedGlobals": []
   },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": [
+          "build-major",
+          "build-minor",
+          "build-patch",
+          "build-storybook",
+          "build"
+        ]
+      }
+    }
+  },
   "plugins": [
     {
       "plugin": "@nx/vite/plugin",
@@ -118,5 +132,6 @@
     "build-custom-server": {
       "cache": true
     }
-  }
+  },
+  "neverConnectToCloud": true
 }
