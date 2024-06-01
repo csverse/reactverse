@@ -30,7 +30,8 @@
           "build-minor",
           "build-patch",
           "build-storybook",
-          "build"
+          "build",
+          "build-custom-server"
         ]
       }
     }
