@@ -1,6 +1,6 @@
 {
   "name": "ui-verse",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
@@ -10,12 +10,14 @@
     }
   },
   "scripts": {
+    "build-css": "tailwindcss -o ../../dist/libs/ui-verse/style.css --minify",
     "build": "npx nx run ui-verse:build",
     "minor": "npm version minor",
     "patch": "npm version patch",
     "major": "npm version major",
     "build-minor": "npm-run-all minor build",
     "build-patch": "npm-run-all patch build",
-    "build-major": "npm-run-all major build"
+    "build-major": "npm-run-all major build",
+    "build-local": "npm-run-all build-css build"
   }
 }
