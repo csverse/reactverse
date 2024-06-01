@@ -35,33 +35,33 @@ jobs:
       - name: Prebuild Storybook
         run: npm run build-storybook
 
-      - name: Publish minor version to npm
-        if: contains(github.event.head_commit.message, '[minor]')
-        run: npm run build-minor && npm publish --access public
-        working-directory: dist/libs/ui-verse
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish patch version to npm
-        if: contains(github.event.head_commit.message, '[patch]')
-        run: npm run build-patch && npm publish --access public
-        working-directory: dist/libs/ui-verse
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish major version to npm
-        if: contains(github.event.head_commit.message, '[major]')
-        run: npm run build-major && npm publish --access public
-        working-directory: dist/libs/ui-verse
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Publish to Chromatic
         uses: chromaui/action@latest
         with:
           workingDir: libs/ui-verse
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           storybookBuildDir : storybook-static
+
+      - name: Prebuild ui-verse minor
+        if: contains(github.event.head_commit.message, '[ui-verse-minor]')
+        run: npm run build-minor
+        working-directory: libs/ui-verse
+
+      - name: Prebuild ui-verse patch
+        if: contains(github.event.head_commit.message, '[ui-verse-patch]')
+        run: npm run build-patch
+        working-directory: libs/ui-verse
+
+      - name: Prebuild ui-verse major
+        if: contains(github.event.head_commit.message, '[ui-verse-major]')
+        run: npm run build-major
+        working-directory: libs/ui-verse
+
+      - name: Publish to npm
+        run: npm publish --access public
+        working-directory: dist/libs/ui-verse
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
       # - run: npx nx-cloud record -- echo Hello World
