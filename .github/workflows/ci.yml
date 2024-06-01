@@ -27,12 +27,34 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
       - uses: nrwl/nx-set-shas@v4
 
       - name: Prebuild Storybook
         run: npm run build-storybook
+
+      - name: Publish minor version to npm
+        if: contains(github.event.head_commit.message, '[minor]')
+        run: npm run build-minor && npm publish --access public
+        working-directory: dist/libs/ui-verse
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish patch version to npm
+        if: contains(github.event.head_commit.message, '[patch]')
+        run: npm run build-patch && npm publish --access public
+        working-directory: dist/libs/ui-verse
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish major version to npm
+        if: contains(github.event.head_commit.message, '[major]')
+        run: npm run build-major && npm publish --access public
+        working-directory: dist/libs/ui-verse
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to Chromatic
         uses: chromaui/action@latest

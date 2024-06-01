@@ -1,6 +1,6 @@
 {
   "name": "ui-verse",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
@@ -9,5 +9,14 @@
       "require": "./index.js"
     }
   },
-  "scripts": {}
+  "scripts": {
+    "build": "npx nx run ui-verse:build",
+    "publish": "npm publish --access public",
+    "minor": "npm version minor",
+    "patch": "npm version patch",
+    "major": "npm version major",
+    "build-minor": "npm-run-all minor build",
+    "build-patch": "npm-run-all patch build",
+    "build-major": "npm-run-all major build"
+  }
 }
