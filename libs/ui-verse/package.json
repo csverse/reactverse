@@ -1,6 +1,6 @@
 {
   "name": "ui-verse",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
@@ -11,7 +11,6 @@
   },
   "scripts": {
     "build": "npx nx run ui-verse:build",
-    "publish": "npm publish --access public",
     "minor": "npm version minor",
     "patch": "npm version patch",
     "major": "npm version major",
