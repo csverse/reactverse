@@ -14,7 +14,7 @@ export interface ButtonPropsType
 }
 
 export function Button(props: ButtonPropsType) {
-  return (<ButtonComponent>{props.children}</ButtonComponent>)
+  return (<ButtonComponent {...props}>{props.children}</ButtonComponent>)
 }
 
 export default Button;

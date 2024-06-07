@@ -1,23 +1,19 @@
-.about {
+.skills {
   padding: 24px;
-h1 {
+
+  h1 {
     color: #7c8c96;
   }
 }
 
-.about-content {
+.content {
   display: grid;
   grid-template-columns: 0.05fr 1.7fr;
   word-spacing: 4px;
   text-align: justify;
 }
 
-.about-div-content {
-  order: 0;
-}
-
-.about-div-content {
-  order: 1;
+.div-content {
   border-left: 2px solid #ee6c45;
 
   li {

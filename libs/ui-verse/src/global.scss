@@ -3,11 +3,15 @@
 @tailwind utilities;
 
 @import url('./assets/styles/font.scss');
+@import url('./assets/styles/styles.scss');
 
 // variables
 $text-color: #222425;
 $bg-primary: #45CCEE;
 
+* {
+  color: #fff;
+}
 .sbdocs-wrapper {
   background-color: rgb(255, 255, 255) !important;
 
@@ -15,4 +19,64 @@ $bg-primary: #45CCEE;
     background-color: rgb(34, 36, 37) !important;
     box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgb(209, 213, 219) 0px 0px 0px 1px inset;
   }
+}
+
+.d-flc {
+  display: flex;
+  flex-direction: column;
+}
+
+.d-flr {
+  display: flex;
+  flex-direction: row;
+}
+
+.d-gr {
+  display: grid;
+}
+
+.dt-c-1 {
+  grid-template-columns: 0.7fr 0.3fr;
+}
+
+.j-center {
+  justify-content: center;
+}
+
+.j-even {
+  justify-content: space-evenly;
+}
+
+.j-around {
+  justify-content: space-around;
+}
+
+.j-between {
+  justify-content: space-between;
+}
+
+.h-100 {
+  height: 100px;
+}
+
+.h-200 {
+  height: 200px;
+}
+
+// style={{position: "relative", width: "100%", height: "100%", marginBottom: "100px"}}
+
+.p-relative {
+  position: relative;
+}
+
+.w-1p {
+  width: 100%;
+}
+
+.h-1p {
+  height: 100%;
+}
+
+.mb-1x {
+  margin-bottom: 100px !important;
 }
