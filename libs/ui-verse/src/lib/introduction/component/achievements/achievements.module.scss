@@ -1,0 +1,17 @@
+.achievements {
+  padding: 24px;
+
+  h1 {
+    color: #7c8c96;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  gap: 20px;
+  word-spacing: 4px;
+  text-align: justify;
+}
