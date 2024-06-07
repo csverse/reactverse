@@ -32,12 +32,24 @@ jobs:
       - run: npm ci
       - uses: nrwl/nx-set-shas@v4
 
+      - name: Prebuild Storybook Docs
+        if: contains(github.event.head_commit.message, '--publish=storybook-chromatic')
+        run: npm run build-storybook
+
+      - name: Publish to Chromatic with docs
+        if: contains(github.event.head_commit.message, '--publish=storybook-chromatic')
+        uses: chromaui/action@latest
+        with:
+          workingDir: libs/ui-verse
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          storybookBuildDir : storybook-static
+
       - name: Prebuild Storybook
-        if: contains(github.event.head_commit.message, '--publish=uiverse --version=')
+        if: contains(github.event.head_commit.message, '--publish=ui-verse --version=')
         run: npm run build-storybook
 
       - name: Publish to Chromatic
-        if: contains(github.event.head_commit.message, '--publish=uiverse --version=')
+        if: contains(github.event.head_commit.message, '--publish=ui-verse --version=')
         uses: chromaui/action@latest
         with:
           workingDir: libs/ui-verse
@@ -45,11 +57,11 @@ jobs:
           storybookBuildDir : storybook-static
 
       - name: Prebuild ui-verse
-        if: contains(github.event.head_commit.message, '--publish=uiverse --version=')
+        if: contains(github.event.head_commit.message, '--publish=ui-verse --version=')
         run: npm run build-ui-verse
 
       - name: Publish to npm
-        if: contains(github.event.head_commit.message, '--publish=uiverse --version=')
+        if: contains(github.event.head_commit.message, '--publish=ui-verse --version=')
         run: npm publish --access public
         working-directory: dist/libs/ui-verse
         env:
