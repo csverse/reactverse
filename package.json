@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "build-storybook": "npx nx run ui-verse:build-storybook",
-    "build-ui-verse": "npx nx run ui-verse:build"
+    "build-ui-verse": "npx nx run ui-verse:build",
+    "build-clock-control": "npx nx build clock-control"
   },
   "private": false,
   "dependencies": {

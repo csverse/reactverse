@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Clock Control",
+  "version": "1.0",
+  "description": "Control Your Life by controlling the time you spend on browsing",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "icons/icon16.png"
+    }
+  },
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "assets/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["assets/content.js"]
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["assets/popup.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/popup.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
