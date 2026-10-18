@@ -4,9 +4,8 @@
   "license": "MIT",
   "scripts": {
     "build-storybook": "npx nx run ui-verse:build-storybook",
-    "build-storybook:turbosnap": "npx nx run ui-verse:build-storybook --stats-json",
     "test-storybook": "test-storybook --url http://127.0.0.1:6006",
-    "chromatic": "npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --storybook-build-dir=libs/ui-verse/storybook-static --only-changed",
+    "chromatic": "npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --storybook-build-dir=libs/ui-verse/storybook-static",
     "build-ui-verse": "npx nx run ui-verse:build",
     "build-clock-control": "npx nx build clock-control"
   },

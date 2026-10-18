@@ -18,7 +18,7 @@ Chromatic itself (builds, baselines, reviewers) so every story reads as real con
 | Asset loading | `ReviewerAvatar/BrokenImage` (`delay`) |
 | Flake control | `BuildsTable` `diffThreshold`; `BuildsTable/WithIgnoredRegion` (`data-chromatic="ignore"`) |
 | Skipping a story | `BuildsTable/NoSnapshot` (`disableSnapshot`) |
-| TurboSnap | `npm run build-storybook:turbosnap`, then `onlyChanged` (CI does both) |
+| TurboSnap | Not available: needs a stats file that Storybook 7.6's Vite builder cannot write (`--stats-json` is a Storybook 8 flag). Chromatic snapshots every story each build. Revisit after upgrading to Storybook 8. |
 | Figma review | `figma()` helper, inactive until `FIGMA_FILE_KEY` is set (no Figma file yet) |
 | Unit tests (non-visual baseline) | `*.spec.tsx`, run with `npx nx test ui-verse` |
 
@@ -32,7 +32,7 @@ Chromatic itself (builds, baselines, reviewers) so every story reads as real con
 ## First baseline (run these yourself)
 
 ```sh
-npm run build-storybook:turbosnap
+npm run build-storybook
 CHROMATIC_PROJECT_TOKEN=<token> npm run chromatic
 ```
 
@@ -62,5 +62,4 @@ Chromatic then snapshots the DOM at the end of each test. Not installed here.
 ## Known gaps to check on first run
 
 - `node_modules` was not installed when this was written, so nothing was typechecked or run.
-- `--stats-json` for TurboSnap on the Vite builder depends on the Storybook 7.6 build flags; if the stats file is missing from `storybook-static`, Chromatic falls back to snapshotting everything.
 - The `@chromatic-com/storybook` panel addon is not installed (compatibility with Storybook 7.6 not verified). CLI and GitHub Action work without it.

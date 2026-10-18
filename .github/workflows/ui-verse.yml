@@ -33,9 +33,9 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
 
       # Every push and PR builds Storybook, runs play functions, then snapshots.
-      # --stats-json lets Chromatic's TurboSnap skip stories your diff cannot affect.
+      # TurboSnap (onlyChanged) is off: Storybook 7.6's Vite builder cannot write the stats file it needs.
       - name: Build Storybook
-        run: npm run build-storybook:turbosnap
+        run: npm run build-storybook
 
       - name: Install Playwright browser for the test-runner
         run: npx playwright install --with-deps chromium
@@ -52,7 +52,6 @@ jobs:
           workingDir: libs/ui-verse
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           storybookBuildDir: storybook-static
-          onlyChanged: true
           exitZeroOnChanges: true
           autoAcceptChanges: master
 

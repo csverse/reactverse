@@ -66,7 +66,7 @@ Open http://localhost:6006 and use the sidebar group **Review Desk**.
 ## 5. Create the first baseline
 
 ```sh
-npm run build-storybook:turbosnap
+npm run build-storybook
 CHROMATIC_PROJECT_TOKEN=<your-token> npm run chromatic
 ```
 
@@ -98,7 +98,7 @@ On a pull request (with the CI from step 8):
 2. Add a repository secret named `CHROMATIC_PROJECT_TOKEN` with the token from step 4.
 3. Push a branch and open a PR. `.github/workflows/ui-verse.yml` will now:
    build Storybook, run all `play` functions with the test-runner, and publish to Chromatic
-   with TurboSnap (`onlyChanged`). Changes on `master` are auto-accepted.
+   (every story, each build). Changes on `master` are auto-accepted.
 
 ## 9. Figma (optional, skipped for now)
 
@@ -136,7 +136,6 @@ link to the fix. Opt a story out with `parameters: { a11yTestRunner: { skip: tru
 | Chromatic says every story changed after a font edit | Web fonts load from Google Fonts; check the build had network access, or set `chromatic.delay` on affected stories. |
 | `test-storybook` fails with accessibility violations | Expected on first run if a Mantine colour or variant misses contrast. The report names the rule and element; send it to me or fix the component. |
 | `test-storybook` cannot connect | It needs a running Storybook on port 6006 (step 3) or the static build served as in the CI workflow. |
-| No TurboSnap savings | The Vite stats file was not written. Check `libs/ui-verse/storybook-static` for `preview-stats.json`; without it Chromatic snapshots everything. |
 
 ## Not set up (optional)
 
