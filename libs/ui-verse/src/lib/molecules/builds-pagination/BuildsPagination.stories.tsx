@@ -5,7 +5,7 @@ import { BuildsPagination } from './BuildsPagination';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
 import { StateGrid, State } from '../../utils/storybook/StateGrid';
-import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { RtlFrame, directionOf } from '../../utils/storybook/RtlFrame';
 import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof BuildsPagination> = {
@@ -216,7 +216,7 @@ export const Rtl: Story = {
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange);
     await step('the navigation lays out right to left', async () => {
-      await expect(getComputedStyle(within(canvasElement).getByRole('navigation')).direction).toBe('rtl');
+      await expect(directionOf(within(canvasElement).getByRole('navigation'))).toBe('rtl');
     });
     await step('Next page still means the next page, and reports it', async () => {
       await userEvent.click(btn(canvasElement, 'Next page'));

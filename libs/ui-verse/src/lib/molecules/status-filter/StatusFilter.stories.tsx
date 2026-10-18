@@ -5,7 +5,7 @@ import { StatusFilter } from './StatusFilter';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
 import { StateGrid, State } from '../../utils/storybook/StateGrid';
-import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { RtlFrame, directionOf } from '../../utils/storybook/RtlFrame';
 import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const COUNTS = { all: 126, pending: 14, changed: 3, accepted: 98, denied: 1 };
@@ -157,7 +157,7 @@ export const Rtl: Story = {
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange);
     await step('the group lays out right to left', async () => {
-      await expect(getComputedStyle(within(canvasElement).getByRole('radiogroup')).direction).toBe('rtl');
+      await expect(directionOf(within(canvasElement).getByRole('radiogroup'))).toBe('rtl');
     });
     await step('choosing a status still selects and reports it', async () => {
       await userEvent.click(within(canvasElement).getByText('Needs review'));

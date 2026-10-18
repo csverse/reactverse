@@ -51,4 +51,19 @@ describe('SignInForm', () => {
     );
     expect(getByRole('alert').textContent).toBe('Wrong credentials.');
   });
+
+  it('flags each invalid field to assistive tech, including the password field', () => {
+    const { getByRole, getByLabelText } = renderWithTheme(<SignInForm onSubmit={jest.fn()} />);
+    fireEvent.click(getByRole('button', { name: 'Sign in' }));
+    expect(getByLabelText('Work email').getAttribute('aria-invalid')).toBe('true');
+    expect(getByLabelText('Password').getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('does not flag a valid field', () => {
+    const { getByRole, getByLabelText } = renderWithTheme(<SignInForm onSubmit={jest.fn()} />);
+    fireEvent.change(getByLabelText('Work email'), { target: { value: 'a@b.co' } });
+    fireEvent.click(getByRole('button', { name: 'Sign in' }));
+    expect(getByLabelText('Work email').getAttribute('aria-invalid')).toBe('false');
+    expect(getByLabelText('Password').getAttribute('aria-invalid')).toBe('true');
+  });
 });

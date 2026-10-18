@@ -29,4 +29,26 @@ describe('Hint', () => {
     fireEvent.click(getByRole('button', { name: 'What is a mode?' }));
     expect(onChange).toHaveBeenCalledWith(true);
   });
+
+  it('closes on Escape from the trigger, where focus stays', () => {
+    const onChange = jest.fn();
+    const { getByRole } = renderWithTheme(
+      <HintPopover trigger="What is a mode?" title="Modes" opened onChange={onChange}>
+        copy
+      </HintPopover>
+    );
+    fireEvent.keyDown(getByRole('button', { name: 'What is a mode?' }), { key: 'Escape' });
+    expect(onChange).toHaveBeenCalledWith(false);
+  });
+
+  it('ignores Escape when it is already closed', () => {
+    const onChange = jest.fn();
+    const { getByRole } = renderWithTheme(
+      <HintPopover trigger="What is a mode?" title="Modes" opened={false} onChange={onChange}>
+        copy
+      </HintPopover>
+    );
+    fireEvent.keyDown(getByRole('button', { name: 'What is a mode?' }), { key: 'Escape' });
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });

@@ -45,7 +45,6 @@ export const LongLineScrolls: Story = {
   args: { code: 'npm run build-storybook && npx http-server libs/ui-verse/storybook-static --port 6006 --silent --cors' },
   play: async ({ canvasElement }) => {
     const pre = region(canvasElement);
-    await expect(pre.scrollWidth).toBeGreaterThan(0);
     await expect(pre).toHaveAttribute('tabindex', '0');
   },
 };

@@ -28,7 +28,9 @@ for (const file of storyFiles(root).sort()) {
   const stories = composeStories(require(file));
   describe(relative(root, file), () => {
     for (const [name, Story] of Object.entries(stories)) {
-      it(name, async () => {
+      // Needs a real image request to fail. jsdom never loads images, so it cannot reach the fallback.
+      const needsRealImageLoad = name === 'BrokenImage';
+      (needsRealImageLoad ? it.skip : it)(name, async () => {
         const { container } = render(<Story />);
         await Story.play?.({
           canvasElement: container,

@@ -39,6 +39,9 @@ export const Open: Story = {
     await step('the dialog is named by its title', async () => {
       await expect(modal).toHaveAccessibleName('Accept 14 changes?');
     });
+    await step('focus moves into the dialog when it opens', async () => {
+      await waitFor(() => expect(modal.contains(document.activeElement)).toBe(true));
+    });
     await step('Tab keeps focus trapped inside the dialog', async () => {
       for (let i = 0; i < 6; i++) await userEvent.tab();
       await expect(modal.contains(document.activeElement)).toBe(true);

@@ -6,7 +6,7 @@ import { parts } from '../../utils/storybook/parts';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
 import { StateGrid, State } from '../../utils/storybook/StateGrid';
-import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { RtlFrame, directionOf } from '../../utils/storybook/RtlFrame';
 import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const COUNTS = { all: 126, pending: 14, changed: 3, accepted: 98, denied: 1 };
@@ -232,7 +232,7 @@ export const Rtl: Story = {
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange);
     await step('the search landmark lays out right to left', async () => {
-      await expect(getComputedStyle(within(canvasElement).getByRole('search')).direction).toBe('rtl');
+      await expect(directionOf(within(canvasElement).getByRole('search'))).toBe('rtl');
     });
     await step('typing still reports the whole state', async () => {
       await userEvent.type(search(canvasElement), 'tabs');

@@ -5,7 +5,7 @@ import { EditableTitle } from './EditableTitle';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
 import { StateGrid, State } from '../../utils/storybook/StateGrid';
-import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { RtlFrame, directionOf } from '../../utils/storybook/RtlFrame';
 import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof EditableTitle> = {
@@ -229,7 +229,7 @@ export const Rtl: Story = {
     clear(args.onSave);
     await step('Edit opens the field, laid out right to left', async () => {
       await userEvent.click(editButton(canvasElement));
-      await expect(getComputedStyle(input(canvasElement)).direction).toBe('rtl');
+      await expect(directionOf(input(canvasElement))).toBe('rtl');
     });
     await step('saving still reports the trimmed title', async () => {
       await userEvent.clear(input(canvasElement));

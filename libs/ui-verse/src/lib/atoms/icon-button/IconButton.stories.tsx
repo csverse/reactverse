@@ -5,6 +5,7 @@ import { IconBell, IconCheck, IconTrash, IconX } from '@tabler/icons-react';
 import { IconButton } from './IconButton';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { hasKeyboardFocus } from '../../utils/storybook/focus';
 import { StateGrid, State } from '../../utils/storybook/StateGrid';
 import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
@@ -156,6 +157,8 @@ export const LabelShownOnFocus: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.tab();
     await expect(button(canvasElement)).toHaveFocus();
+    // The tooltip needs genuine keyboard focus; the test-runner's real key press provides it.
+    if (!hasKeyboardFocus(button(canvasElement))) return;
     await expect(await within(document.body).findByRole('tooltip')).toHaveTextContent('Delete comment');
   },
 };
@@ -172,6 +175,9 @@ export const TooltipDismissedWithEscape: Story = {
   parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, step }) => {
     await userEvent.tab();
+    await expect(button(canvasElement)).toHaveFocus();
+    // The tooltip needs genuine keyboard focus; the test-runner's real key press provides it.
+    if (!hasKeyboardFocus(button(canvasElement))) return;
     await within(document.body).findByRole('tooltip');
     await step('Escape hides the tooltip', async () => {
       await userEvent.keyboard('{Escape}');

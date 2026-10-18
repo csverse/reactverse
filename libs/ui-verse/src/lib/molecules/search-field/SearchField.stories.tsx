@@ -5,7 +5,7 @@ import { SearchField } from './SearchField';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
 import { StateGrid, State } from '../../utils/storybook/StateGrid';
-import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { RtlFrame, directionOf } from '../../utils/storybook/RtlFrame';
 import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof SearchField> = {
@@ -211,7 +211,7 @@ export const Rtl: Story = {
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange);
     await step('the field lays out right to left', async () => {
-      await expect(getComputedStyle(box(canvasElement)).direction).toBe('rtl');
+      await expect(directionOf(box(canvasElement))).toBe('rtl');
     });
     await step('typing still reports the text', async () => {
       await userEvent.type(box(canvasElement), 'tabs');

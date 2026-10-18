@@ -52,8 +52,9 @@ export const HiddenLabel: Story = {
     await step('the words are still in the status region', async () => {
       await expect(status(canvasElement)).toHaveTextContent('Loading builds');
     });
-    await step('but nothing visible is drawn beside the spinner', async () => {
-      await expect(within(canvasElement).queryByText('Loading builds')).not.toBeVisible();
+    await step('but it is visually hidden, so nothing is drawn beside the spinner', async () => {
+      // toBeVisible would pass: VisuallyHidden clips the text, it does not use display:none.
+      await expect(within(canvasElement).getByText('Loading builds')).toHaveClass('mantine-VisuallyHidden-root');
     });
   },
 };

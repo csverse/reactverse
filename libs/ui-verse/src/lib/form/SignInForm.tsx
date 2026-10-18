@@ -56,6 +56,7 @@ export function SignInForm({ onSubmit, loading = false, serverError }: SignInFor
           autoComplete="email"
           value={values.email}
           error={errors.email}
+          aria-invalid={Boolean(errors.email)}
           onChange={(e) => setValues({ ...values, email: e.currentTarget.value })}
         />
         <PasswordInput
@@ -64,6 +65,8 @@ export function SignInForm({ onSubmit, loading = false, serverError }: SignInFor
           autoComplete="current-password"
           value={values.password}
           error={errors.password}
+          // Mantine's PasswordInput puts aria-invalid on its wrapper, not on the real input.
+          aria-invalid={Boolean(errors.password)}
           onChange={(e) => setValues({ ...values, password: e.currentTarget.value })}
         />
         <Button type="submit" loading={loading} fullWidth>

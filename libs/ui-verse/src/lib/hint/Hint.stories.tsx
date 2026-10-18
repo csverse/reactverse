@@ -6,6 +6,7 @@ import { HintTooltip, HintPopover } from './Hint';
 import { events } from '../utils/storybook/events';
 import { figma } from '../utils/storybook/chromatic';
 import { spy, clear } from '../utils/storybook/spy';
+import { hasKeyboardFocus } from '../utils/storybook/focus';
 
 const meta: Meta<typeof HintTooltip> = {
   title: 'Review Desk/Hint',
@@ -65,8 +66,11 @@ export const TooltipOnKeyboardFocus: Story = {
     await step('Tab focuses the target and shows the tooltip', async () => {
       await userEvent.tab();
       await expect(target).toHaveFocus();
+      // The tooltip needs genuine keyboard focus; the test-runner's real key press provides it.
+      if (!hasKeyboardFocus(target)) return;
       await expect(await tooltip()).toBeVisible();
     });
+    if (!hasKeyboardFocus(target)) return;
     await step('Escape dismisses it without moving focus', async () => {
       await userEvent.keyboard('{Escape}');
       await noTooltip();
