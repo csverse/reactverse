@@ -65,7 +65,15 @@ export function HintPopover({
       transitionProps={{ duration: 0 }}
     >
       <Popover.Target>
-        <Button variant="default" onClick={() => onChange?.(!opened)}>
+        <Button
+          variant="default"
+          onClick={() => onChange?.(!opened)}
+          // Mantine only closes on Escape from inside the dropdown. Focus stays on the trigger
+          // here, so without this a keyboard user could not dismiss the popover.
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && opened) onChange?.(false);
+          }}
+        >
           {trigger}
         </Button>
       </Popover.Target>

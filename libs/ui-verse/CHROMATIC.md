@@ -63,3 +63,46 @@ Chromatic then snapshots the DOM at the end of each test. Not installed here.
 
 - `node_modules` was not installed when this was written, so nothing was typechecked or run.
 - The `@chromatic-com/storybook` panel addon is not installed (compatibility with Storybook 7.6 not verified). CLI and GitHub Action work without it.
+
+## Atoms, molecules and compound components
+
+Twenty more components sit in `src/lib/atoms`, `src/lib/molecules` and `src/lib/compound`. Storybook groups them as **Atoms**, **Molecules** and **Compound**.
+
+| Level | Components | What it adds to the test surface |
+| --- | --- | --- |
+| Atoms | IconButton, LoadingIndicator, ShortcutKey, FilterTag, SnapshotProgress, ExternalLink, StatValue, Timestamp | Single-purpose states, accessible names, fixed "now" for stable snapshots, infinite animation |
+| Molecules | SearchField, CodeSnippet, EmptyState, StatusFilter, CommentCard, BuildsPagination, EditableTitle | Typing, clearing, focus return, validation, reuse of atoms |
+| Compound | ChangeReviewCard, ReviewThread, BuildSummary, FilterBar, SelectableList | `Parent.Child` composition over a shared context, multi-step flows, state that spans several parts |
+
+Compound parts throw a clear error if used outside their parent, and each has a spec for that.
+
+### How the 20 are tested
+
+Every story in Atoms, Molecules and Compound has a `play` function, and every spec runs axe.
+
+| Layer | Where | What it covers |
+| --- | --- | --- |
+| Unit and edge cases | `*.spec.tsx` | Props, empty and extreme values, controlled and uncontrolled use, callbacks fire once with the right payload, nothing throws without a handler |
+| Accessibility, automated | `expectNoA11yViolations` in `src/lib/utils/test/a11y.ts` | axe-core on every state of every component in Jest. Colour contrast is skipped there (jsdom has no layout) and runs in the browser through the Accessibility panel and `npm run test-storybook` |
+| Accessibility, asserted | spec and `play` assertions | Names, roles, `aria-*` state, live regions, decorative icons hidden, focus returns, no stray tab stops |
+| Interactions | `play` with `step` | Mouse and keyboard paths, state changes, disabled and locked states, sequences |
+| Actions | `spy()` in `args`, `events()` in `argTypes` | Every callback is logged in Actions, listed under Events in docs, and asserted in `play` |
+
+Atoms with no events (LoadingIndicator, ShortcutKey, SnapshotProgress, StatValue, Timestamp) have an empty Actions panel by design.
+
+## Visual testing
+
+Chromatic photographs stories; it does not need separate "visual tests". What matters is *which* stories and in *which modes*, because every snapshot counts.
+
+| Kind of story | Modes | Why |
+| --- | --- | --- |
+| `StatesMatrix` (one per component) | Light and dark across mobile, tablet and desktop (5). Directional components also get right-to-left (7). | One snapshot shows every state side by side, so a regression in any state is caught at every width and direction. |
+| A distinct visual state (`Default`, `Disabled`, `LongLabel`, ...) | Light and dark (2). | Gives a named, reviewable snapshot per state without paying for every width. |
+| `Rtl` (SearchField, StatusFilter, BuildsPagination, EditableTitle, FilterBar) | Light and dark (2). | The story itself is right-to-left, and its `play` function checks the behaviour as well as the look. |
+| Behaviour only (keyboard, naming, callbacks) | Not photographed (`BEHAVIOUR_ONLY`). | Looks the same as another story. Its `play` function still runs in `npm run test-storybook`. |
+
+Rule of thumb: add a snapshot only for a state that looks different. If it only behaves differently, give it `parameters: BEHAVIOUR_ONLY`.
+
+Direction is a toolbar global (**Direction**: ltr / rtl) as well as a Chromatic mode, so you can flip any story to right-to-left while developing. Mantine's `DirectionProvider` is remounted when it changes.
+
+Not covered: forced-colours and reduced-motion variants. Those need browser emulation, and I could not confirm Chromatic's modes offer it for this setup. Say so if you want to look into it.
