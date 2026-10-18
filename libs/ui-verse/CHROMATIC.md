@@ -63,3 +63,29 @@ Chromatic then snapshots the DOM at the end of each test. Not installed here.
 
 - `node_modules` was not installed when this was written, so nothing was typechecked or run.
 - The `@chromatic-com/storybook` panel addon is not installed (compatibility with Storybook 7.6 not verified). CLI and GitHub Action work without it.
+
+## Atoms, molecules and compound components
+
+Twenty more components sit in `src/lib/atoms`, `src/lib/molecules` and `src/lib/compound`. Storybook groups them as **Atoms**, **Molecules** and **Compound**.
+
+| Level | Components | What it adds to the test surface |
+| --- | --- | --- |
+| Atoms | IconButton, LoadingIndicator, ShortcutKey, FilterTag, SnapshotProgress, ExternalLink, StatValue, Timestamp | Single-purpose states, accessible names, fixed "now" for stable snapshots, infinite animation |
+| Molecules | SearchField, CodeSnippet, EmptyState, StatusFilter, CommentCard, BuildsPagination, EditableTitle | Typing, clearing, focus return, validation, reuse of atoms |
+| Compound | ChangeReviewCard, ReviewThread, BuildSummary, FilterBar, SelectableList | `Parent.Child` composition over a shared context, multi-step flows, state that spans several parts |
+
+Compound parts throw a clear error if used outside their parent, and each has a spec for that.
+
+### How the 20 are tested
+
+Every story in Atoms, Molecules and Compound has a `play` function, and every spec runs axe.
+
+| Layer | Where | What it covers |
+| --- | --- | --- |
+| Unit and edge cases | `*.spec.tsx` | Props, empty and extreme values, controlled and uncontrolled use, callbacks fire once with the right payload, nothing throws without a handler |
+| Accessibility, automated | `expectNoA11yViolations` in `src/lib/utils/test/a11y.ts` | axe-core on every state of every component in Jest. Colour contrast is skipped there (jsdom has no layout) and runs in the browser through the Accessibility panel and `npm run test-storybook` |
+| Accessibility, asserted | spec and `play` assertions | Names, roles, `aria-*` state, live regions, decorative icons hidden, focus returns, no stray tab stops |
+| Interactions | `play` with `step` | Mouse and keyboard paths, state changes, disabled and locked states, sequences |
+| Actions | `spy()` in `args`, `events()` in `argTypes` | Every callback is logged in Actions, listed under Events in docs, and asserted in `play` |
+
+Atoms with no events (LoadingIndicator, ShortcutKey, SnapshotProgress, StatValue, Timestamp) have an empty Actions panel by design.

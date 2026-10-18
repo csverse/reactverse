@@ -12,3 +12,10 @@ export const renderWithTheme = (ui: ReactElement) => {
     rerender: (next: ReactElement) => utils.rerender(withTheme(next)),
   };
 };
+
+/** Text a person would read. MantineProvider injects <style> tags, which `textContent` would include. */
+export const visibleText = (el: Element) => {
+  const copy = el.cloneNode(true) as Element;
+  copy.querySelectorAll('style').forEach((s) => s.remove());
+  return copy.textContent ?? '';
+};

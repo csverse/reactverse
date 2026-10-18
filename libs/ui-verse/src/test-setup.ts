@@ -28,3 +28,6 @@ class ResizeObserverStub {
   ResizeObserverStub;
 
 window.HTMLElement.prototype.scrollIntoView = () => undefined;
+
+// axe-core probes canvas support; jsdom has no canvas, so answer "not available" quietly.
+HTMLCanvasElement.prototype.getContext = (() => null) as unknown as HTMLCanvasElement['getContext'];
