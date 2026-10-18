@@ -7,6 +7,10 @@ export default {
     '^.+\\.[tj]sx?$': ['babel-jest', { presets: ['@nx/react/babel'] }],
   },
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
+  moduleNameMapper: {
+    // Global stylesheets only. `.module.scss` keeps going through the Nx file transform.
+    '^(?!.*\\.module\\.scss$).+\\.(css|scss)$': '<rootDir>/src/test-style-stub.ts',
+  },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/libs/ui-verse',
 };
