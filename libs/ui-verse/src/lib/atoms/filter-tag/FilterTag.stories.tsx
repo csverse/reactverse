@@ -4,6 +4,8 @@ import { expect } from '@storybook/jest';
 import { FilterTag } from './FilterTag';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof FilterTag> = {
   title: 'Atoms/FilterTag',
@@ -71,6 +73,7 @@ export const Group: Story = {
 // ---- Actions ----
 
 export const RemovedWithMouse: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { onRemove: spy('onRemove') },
   play: async ({ canvasElement, args }) => {
     clear(args.onRemove);
@@ -81,6 +84,7 @@ export const RemovedWithMouse: Story = {
 };
 
 export const ClickingTheLabelDoesNotRemove: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { onRemove: spy('onRemove') },
   play: async ({ canvasElement, args }) => {
     clear(args.onRemove);
@@ -92,6 +96,7 @@ export const ClickingTheLabelDoesNotRemove: Story = {
 // ---- Keyboard and accessibility ----
 
 export const RemovedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { onRemove: spy('onRemove') },
   play: async ({ canvasElement, args, step }) => {
     clear(args.onRemove);
@@ -107,6 +112,7 @@ export const RemovedWithKeyboard: Story = {
 };
 
 export const RemovedWithSpace: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { onRemove: spy('onRemove') },
   play: async ({ canvasElement, args }) => {
     clear(args.onRemove);
@@ -117,10 +123,32 @@ export const RemovedWithSpace: Story = {
 };
 
 export const RemoveButtonIsExposedToAssistiveTech: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { onRemove: spy('onRemove') },
   play: async ({ canvasElement }) => {
     // Mantine hides this button by default; the wrapper must undo that.
     await expect(remove(canvasElement)).not.toHaveAttribute('aria-hidden', 'true');
     await expect(remove(canvasElement)).toHaveAttribute('tabindex', '0');
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_MODES } },
+  render: () => (
+    <StateGrid min={240}>
+      <State label="read-only"><FilterTag label="Firefox" /></State>
+      <State label="removable"><FilterTag label="Firefox" onRemove={() => undefined} /></State>
+      <State label="disabled"><FilterTag label="Firefox" onRemove={() => undefined} disabled /></State>
+      <State label="long label"><FilterTag label="feature/redesign-checkout-flow-with-saved-payment-methods" onRemove={() => undefined} /></State>
+      <State label="group">
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {['Chrome', 'Safari', 'dark mode'].map((l) => <FilterTag key={l} label={l} onRemove={() => undefined} />)}
+        </div>
+      </State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(5);
   },
 };

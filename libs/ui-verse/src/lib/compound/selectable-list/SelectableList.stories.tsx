@@ -3,9 +3,11 @@ import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { SelectableList } from './SelectableList';
 import { parts } from '../../utils/storybook/parts';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const ITEMS = [
   { id: 'tabs', label: 'BuildTabs / Default', description: '3 changes in Firefox' },
@@ -23,7 +25,6 @@ const meta: Meta<typeof SelectableList> = {
   argTypes: events({ onSelectionChange: 'Called with the selected ids, in list order, after every change. Locked items are included when they are selected.' }),
   args: { ids: IDS, label: 'Changed stories', onSelectionChange: spy('onSelectionChange') },
   decorators: [(Story) => <div style={{ maxWidth: 460 }}><Story /></div>],
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof SelectableList>;
@@ -82,6 +83,7 @@ export const EveryItemLocked: Story = {
 // ---- Actions ----
 
 export const SelectedAll: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} />,
   play: async ({ canvasElement, args, step }) => {
     const canvas = within(canvasElement);
@@ -100,6 +102,7 @@ export const SelectedAll: Story = {
 };
 
 export const SelectedOneByOne: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} />,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onSelectionChange);
@@ -119,6 +122,7 @@ export const SelectedOneByOne: Story = {
 };
 
 export const SelectingTheRestCompletesTheSet: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} defaultSelected={['tabs']} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onSelectionChange);
@@ -129,6 +133,7 @@ export const SelectingTheRestCompletesTheSet: Story = {
 };
 
 export const LockedItemIsSkipped: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} disabledIds={['form']} />,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onSelectionChange);
@@ -146,6 +151,7 @@ export const LockedItemIsSkipped: Story = {
 };
 
 export const LockedItemSurvivesClearingAll: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} disabledIds={['form']} defaultSelected={IDS} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onSelectionChange);
@@ -157,6 +163,7 @@ export const LockedItemSurvivesClearingAll: Story = {
 // ---- Keyboard and accessibility ----
 
 export const SelectedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} />,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onSelectionChange);
@@ -174,6 +181,7 @@ export const SelectedWithKeyboard: Story = {
 };
 
 export const SelectAllWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onSelectionChange);
@@ -184,6 +192,7 @@ export const SelectAllWithKeyboard: Story = {
 };
 
 export const LockedItemIsSkippedByTab: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} disabledIds={['modal']} />,
   play: async ({ canvasElement }) => {
     await userEvent.tab();
@@ -195,6 +204,7 @@ export const LockedItemIsSkippedByTab: Story = {
 };
 
 export const GroupIsNamed: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} />,
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('group', { name: 'Changed stories' })).toBeInTheDocument();
@@ -202,6 +212,7 @@ export const GroupIsNamed: Story = {
 };
 
 export const SummaryIsAnnouncedPolitely: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} />,
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText('0 of 4 selected')).toHaveAttribute('aria-live', 'polite');
@@ -209,10 +220,28 @@ export const SummaryIsAnnouncedPolitely: Story = {
 };
 
 export const EveryCheckboxHasAName: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <List {...args} />,
   play: async ({ canvasElement }) => {
     for (const cb of within(canvasElement).getAllByRole('checkbox')) {
       await expect(cb).toHaveAccessibleName();
     }
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_RTL_MODES } },
+  render: (args) => (
+    <StateGrid min={360}>
+      <State label="none selected"><List {...args} /></State>
+      <State label="some selected"><List {...args} defaultSelected={['tabs', 'table']} /></State>
+      <State label="all selected"><List {...args} defaultSelected={IDS} /></State>
+      <State label="locked item"><List {...args} disabledIds={['form']} defaultSelected={['form']} /></State>
+      <State label="every item locked"><List {...args} disabledIds={IDS} /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(5);
   },
 };

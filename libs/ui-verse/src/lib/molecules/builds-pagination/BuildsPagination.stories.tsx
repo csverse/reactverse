@@ -2,9 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { BuildsPagination } from './BuildsPagination';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof BuildsPagination> = {
   title: 'Molecules/BuildsPagination',
@@ -12,7 +14,6 @@ const meta: Meta<typeof BuildsPagination> = {
   tags: ['autodocs'],
   argTypes: events({ onChange: 'Called with the new page number, starting at 1, each time the page changes.' }),
   args: { totalItems: 482, onChange: spy('onChange') },
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof BuildsPagination>;
@@ -52,6 +53,7 @@ export const OnePage: Story = {
   },
 };
 export const ExactlyOnePageFull: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { totalItems: 20 },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).queryByRole('navigation')).toBeNull();
@@ -73,6 +75,7 @@ export const CustomPageSize: Story = {
   },
 };
 export const StartPagePastTheEndIsClamped: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { defaultPage: 999 },
   play: async ({ canvasElement }) => {
     await expect(text(canvasElement, 'Showing 481–482 of 482 builds')).toBeInTheDocument();
@@ -82,6 +85,7 @@ export const StartPagePastTheEndIsClamped: Story = {
 // ---- Actions ----
 
 export const NextPage: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange);
     await step('Next page moves forward and reports page 2 once', async () => {
@@ -96,6 +100,7 @@ export const NextPage: Story = {
 };
 
 export const PreviousPage: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { defaultPage: 4 },
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
@@ -105,6 +110,7 @@ export const PreviousPage: Story = {
 };
 
 export const JumpToAPage: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
     await userEvent.click(btn(canvasElement, 'Page 3'));
@@ -115,6 +121,7 @@ export const JumpToAPage: Story = {
 };
 
 export const JumpToTheEnds: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange);
     await step('Last page goes to 25', async () => {
@@ -129,6 +136,7 @@ export const JumpToTheEnds: Story = {
 };
 
 export const DisabledControlsDoNotFire: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
     await userEvent.click(btn(canvasElement, 'Previous page'));
@@ -140,6 +148,7 @@ export const DisabledControlsDoNotFire: Story = {
 // ---- Keyboard and accessibility ----
 
 export const PagedByKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange);
     await step('focus Next page', async () => {
@@ -156,12 +165,14 @@ export const PagedByKeyboard: Story = {
 };
 
 export const NavigationIsNamed: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('navigation', { name: 'Builds pagination' })).toBeInTheDocument();
   },
 };
 
 export const EveryControlIsNamed: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { defaultPage: 5 },
   play: async ({ canvasElement }) => {
     for (const name of ['First page', 'Previous page', 'Next page', 'Last page', 'Page 5']) {
@@ -171,7 +182,46 @@ export const EveryControlIsNamed: Story = {
 };
 
 export const RangeIsAnnouncedWhenItChanges: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(text(canvasElement, 'Showing 1–20 of 482 builds')).toHaveAttribute('aria-live', 'polite');
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_RTL_MODES } },
+  render: (args) => (
+    <StateGrid min={480}>
+      <State label="first page"><BuildsPagination {...args} /></State>
+      <State label="middle page"><BuildsPagination {...args} defaultPage={12} /></State>
+      <State label="last page"><BuildsPagination {...args} defaultPage={25} /></State>
+      <State label="one page"><BuildsPagination {...args} totalItems={12} /></State>
+      <State label="no builds"><BuildsPagination {...args} totalItems={0} /></State>
+      <State label="custom page size"><BuildsPagination {...args} pageSize={50} /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(6);
+  },
+};
+
+/** Right to left: the story itself is RTL, so paging is tested, not only photographed. */
+export const Rtl: Story = {
+  render: (args) => (
+    <RtlFrame>
+      <BuildsPagination {...args} />
+    </RtlFrame>
+  ),
+  play: async ({ canvasElement, args, step }) => {
+    clear(args.onChange);
+    await step('the navigation lays out right to left', async () => {
+      await expect(getComputedStyle(within(canvasElement).getByRole('navigation')).direction).toBe('rtl');
+    });
+    await step('Next page still means the next page, and reports it', async () => {
+      await userEvent.click(btn(canvasElement, 'Next page'));
+      await expect(args.onChange).toHaveBeenLastCalledWith(2);
+      await expect(text(canvasElement, 'Showing 21–40 of 482 builds')).toBeInTheDocument();
+    });
   },
 };

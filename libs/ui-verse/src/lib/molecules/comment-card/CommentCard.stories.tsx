@@ -2,9 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { CommentCard } from './CommentCard';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const BODY = 'The focus ring on the second tab is clipped in Firefox. Can we add 2px of outline offset?';
 
@@ -20,7 +22,6 @@ const meta: Meta<typeof CommentCard> = {
     now: '2026-10-18T12:00:00Z',
   },
   decorators: [(Story) => <div style={{ maxWidth: 520 }}><Story /></div>],
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof CommentCard>;
@@ -64,6 +65,7 @@ export const LongName: Story = {
   },
 };
 export const MarkupIsShownAsText: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { body: '<b>not bold</b> and <script>alert(1)</script>' },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText('<b>not bold</b> and <script>alert(1)</script>')).toBeVisible();
@@ -74,6 +76,7 @@ export const MarkupIsShownAsText: Story = {
 // ---- Actions ----
 
 export const ResolvedByClick: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { onResolve: spy('onResolve') },
   play: async ({ canvasElement, args, step }) => {
     const canvas = within(canvasElement);
@@ -91,6 +94,7 @@ export const ResolvedByClick: Story = {
 };
 
 export const ReopenedByClick: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { resolved: true, onResolve: spy('onResolve') },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -102,6 +106,7 @@ export const ReopenedByClick: Story = {
 };
 
 export const ResolvedThenReopened: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { onResolve: spy('onResolve') },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -117,6 +122,7 @@ export const ResolvedThenReopened: Story = {
 // ---- Keyboard and accessibility ----
 
 export const ResolvedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { onResolve: spy('onResolve') },
   play: async ({ canvasElement, args, step }) => {
     clear(args.onResolve);
@@ -132,6 +138,7 @@ export const ResolvedWithKeyboard: Story = {
 };
 
 export const FocusStaysOnTheButtonAfterToggling: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { onResolve: spy('onResolve') },
   play: async ({ canvasElement }) => {
     await userEvent.tab();
@@ -142,13 +149,32 @@ export const FocusStaysOnTheButtonAfterToggling: Story = {
 };
 
 export const CardIsNamedAfterItsAuthor: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(article(canvasElement)).toHaveAccessibleName('Comment by Priya Raman');
   },
 };
 
 export const TimeIsMachineReadable: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('time')).toHaveAttribute('datetime', '2026-10-18T09:10:00.000Z');
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_RTL_MODES } },
+  render: (args) => (
+    <StateGrid min={340}>
+      <State label="read-only"><CommentCard {...args} /></State>
+      <State label="open"><CommentCard {...args} onResolve={() => undefined} /></State>
+      <State label="resolved"><CommentCard {...args} resolved onResolve={() => undefined} /></State>
+      <State label="long body"><CommentCard {...args} body={'This needs a closer look at every viewport. '.repeat(8)} onResolve={() => undefined} /></State>
+      <State label="long name"><CommentCard {...args} author={{ name: 'Okonkwo Adeyemi-Featherstonehaugh' }} onResolve={() => undefined} /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(5);
   },
 };

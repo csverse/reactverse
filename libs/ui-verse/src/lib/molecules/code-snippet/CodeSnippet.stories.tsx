@@ -2,9 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { CodeSnippet } from './CodeSnippet';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const CMD = 'npx chromatic --project-token=<token>';
 
@@ -15,7 +16,6 @@ const meta: Meta<typeof CodeSnippet> = {
   argTypes: events({ onCopy: 'Called with the code each time the copy button is pressed, whether or not the browser allowed the clipboard write.' }),
   args: { code: CMD, onCopy: spy('onCopy') },
   decorators: [(Story) => <div style={{ maxWidth: 520 }}><Story /></div>],
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof CodeSnippet>;
@@ -63,6 +63,7 @@ export const CustomLabel: Story = {
   },
 };
 export const CodeWithMarkupIsShownAsText: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { code: '<script>alert("hi")</script>' },
   play: async ({ canvasElement }) => {
     await expect(region(canvasElement)).toHaveTextContent('<script>alert("hi")</script>');
@@ -73,6 +74,7 @@ export const CodeWithMarkupIsShownAsText: Story = {
 // ---- Actions ----
 
 export const CopyReportsTheCode: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onCopy);
     await userEvent.click(copyButton(canvasElement));
@@ -82,6 +84,7 @@ export const CopyReportsTheCode: Story = {
 };
 
 export const CopyReportsEveryPress: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onCopy);
     await userEvent.click(copyButton(canvasElement));
@@ -93,6 +96,7 @@ export const CopyReportsEveryPress: Story = {
 // ---- Keyboard and accessibility ----
 
 export const CopiedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onCopy);
     await step('Tab goes to the snippet first so it can be scrolled', async () => {
@@ -111,6 +115,7 @@ export const CopiedWithKeyboard: Story = {
 };
 
 export const ScrollableByKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { hideCopy: true },
   play: async ({ canvasElement }) => {
     await userEvent.tab();
@@ -119,8 +124,25 @@ export const ScrollableByKeyboard: Story = {
 };
 
 export const ButtonNameTellsYouWhatItCopies: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { label: 'workflow step' },
   play: async ({ canvasElement }) => {
     await expect(copyButton(canvasElement, 'Copy workflow step')).toHaveAccessibleName('Copy workflow step');
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_MODES } },
+  render: (args) => (
+    <StateGrid min={320}>
+      <State label="command"><CodeSnippet {...args} /></State>
+      <State label="multi-line"><CodeSnippet {...args} label="workflow step" code={'- name: Publish\n  uses: chromaui/action@latest\n  with:\n    projectToken: token'} /></State>
+      <State label="long line scrolls"><CodeSnippet {...args} code="npm run build-storybook && npx http-server libs/ui-verse/storybook-static --port 6006 --silent --cors" /></State>
+      <State label="without copy"><CodeSnippet {...args} hideCopy /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(4);
   },
 };

@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { within } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { LoadingIndicator } from './LoadingIndicator';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 /**
  * LoadingIndicator has no events, so its Actions panel stays empty by design.
@@ -57,12 +59,14 @@ export const HiddenLabel: Story = {
 };
 
 export const IsAPoliteStatus: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(status(canvasElement)).toHaveAttribute('aria-live', 'polite');
   },
 };
 
 export const SpinnerIsHiddenFromAssistiveTech: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     const spinner = canvasElement.querySelector('.mantine-Loader-root');
     await expect(spinner).toHaveAttribute('aria-hidden', 'true');
@@ -70,8 +74,26 @@ export const SpinnerIsHiddenFromAssistiveTech: Story = {
 };
 
 export const NothingToFocus: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     // A loading indicator is not interactive and must not add a tab stop.
     await expect(canvasElement.querySelectorAll('button, a, input, [tabindex]')).toHaveLength(0);
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { delay: 100, modes: MATRIX_MODES } },
+  render: () => (
+    <StateGrid min={240}>
+      <State label="small"><LoadingIndicator size="sm" label="Loading builds" /></State>
+      <State label="medium"><LoadingIndicator label="Loading builds" /></State>
+      <State label="large"><LoadingIndicator size="lg" label="Capturing 126 snapshots" /></State>
+      <State label="hidden label"><LoadingIndicator hideLabel label="Loading builds" /></State>
+      <State label="long label"><LoadingIndicator label="Waiting for Storybook to build, then capturing every story in every mode" /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(5);
   },
 };

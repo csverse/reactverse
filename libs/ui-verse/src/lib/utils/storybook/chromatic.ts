@@ -10,6 +10,8 @@ export const MODES = {
   'light-tablet': { theme: 'light', viewport: 768 },
   'light-desktop': { theme: 'light', viewport: 1200 },
   'dark-desktop': { theme: 'dark', viewport: 1200 },
+  'light-rtl': { theme: 'light', direction: 'rtl' },
+  'dark-rtl': { theme: 'dark', direction: 'rtl' },
 } as const;
 
 /** Light + dark at default width: the baseline for every story. */
@@ -46,3 +48,22 @@ export const figma = (frame: string) =>
         },
       }
     : {};
+
+/** Right-to-left layout in both themes, for components whose layout is directional. */
+export const RTL_MODES = {
+  'light-rtl': MODES['light-rtl'],
+  'dark-rtl': MODES['dark-rtl'],
+};
+
+/** Responsive modes plus right-to-left. Use on the states matrix of directional components. */
+export const MATRIX_RTL_MODES = { ...RESPONSIVE_MODES, ...RTL_MODES };
+
+/** Alias used by states-matrix stories: the widest, most useful set of snapshots for one story. */
+export const MATRIX_MODES = RESPONSIVE_MODES;
+
+/**
+ * For stories that test behaviour only (keyboard, naming, callbacks) and look the same as another
+ * story. They still run their `play` function in the test-runner; Chromatic just does not
+ * photograph them, which keeps the snapshot count to distinct visual states.
+ */
+export const BEHAVIOUR_ONLY = { chromatic: { disableSnapshot: true } };

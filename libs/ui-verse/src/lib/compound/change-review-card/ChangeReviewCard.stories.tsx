@@ -3,9 +3,11 @@ import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { ChangeReviewCard } from './ChangeReviewCard';
 import { parts } from '../../utils/storybook/parts';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof ChangeReviewCard> = {
   title: 'Compound/ChangeReviewCard',
@@ -15,7 +17,6 @@ const meta: Meta<typeof ChangeReviewCard> = {
   argTypes: events({ onDecision: 'Called with the card id and the new decision ("approved", "denied", or "pending" after an undo).' }),
   args: { id: 'builds-table-loading', title: 'BuildsTable / Loading', onDecision: spy('onDecision') },
   decorators: [(Story) => <div style={{ maxWidth: 460 }}><Story /></div>],
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof ChangeReviewCard>;
@@ -97,6 +98,7 @@ export const WithoutPreview: Story = {
 // ---- Actions ----
 
 export const ApprovedByClick: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement, args, step }) => {
     const canvas = within(canvasElement);
@@ -115,6 +117,7 @@ export const ApprovedByClick: Story = {
 };
 
 export const DeniedByClick: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onDecision);
@@ -125,6 +128,7 @@ export const DeniedByClick: Story = {
 };
 
 export const DeniedThenUndone: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onDecision);
@@ -142,6 +146,7 @@ export const DeniedThenUndone: Story = {
 };
 
 export const ChangedMindTwice: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onDecision);
@@ -185,6 +190,7 @@ export const ReviewQueue: Story = {
 // ---- Keyboard and accessibility ----
 
 export const ApprovedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onDecision);
@@ -200,6 +206,7 @@ export const ApprovedWithKeyboard: Story = {
 };
 
 export const DeniedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onDecision);
@@ -212,6 +219,7 @@ export const DeniedWithKeyboard: Story = {
 };
 
 export const CardIsNamedAfterItsStory: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('article', { name: `Change in ${T}` })).toBeInTheDocument();
@@ -219,6 +227,7 @@ export const CardIsNamedAfterItsStory: Story = {
 };
 
 export const ButtonsNameTheStoryTheyAffect: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement }) => {
     // With many cards on a page, "Approve" alone would be ambiguous to a screen reader.
@@ -228,9 +237,45 @@ export const ButtonsNameTheStoryTheyAffect: Story = {
 };
 
 export const PreviewsAreLabelled: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('img', { name: 'Baseline snapshot' })).toBeInTheDocument();
     await expect(within(canvasElement).getByRole('img', { name: 'Change snapshot' })).toBeInTheDocument();
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_RTL_MODES } },
+  render: (args) => (
+    <StateGrid min={340}>
+      <State label="pending"><Full {...args} /></State>
+      <State label="approved"><Full {...args} defaultDecision="approved" /></State>
+      <State label="denied"><Full {...args} defaultDecision="denied" /></State>
+      <State label="colour change">
+        <ChangeReviewCard {...args} title="StatusBadge / Denied">
+          <ChangeReviewCard.Preview variant="recolored" />
+          <ChangeReviewCard.Meta>Dark · Firefox</ChangeReviewCard.Meta>
+          <ChangeReviewCard.Actions />
+        </ChangeReviewCard>
+      </State>
+      <State label="identical preview">
+        <ChangeReviewCard {...args}>
+          <ChangeReviewCard.Preview variant="identical" />
+          <ChangeReviewCard.Meta>Only the timestamp differs</ChangeReviewCard.Meta>
+          <ChangeReviewCard.Actions />
+        </ChangeReviewCard>
+      </State>
+      <State label="no preview">
+        <ChangeReviewCard {...args}>
+          <ChangeReviewCard.Meta>Interaction test failed</ChangeReviewCard.Meta>
+          <ChangeReviewCard.Actions />
+        </ChangeReviewCard>
+      </State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(6);
   },
 };

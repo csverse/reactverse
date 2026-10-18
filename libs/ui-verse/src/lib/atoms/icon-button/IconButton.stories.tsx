@@ -5,6 +5,8 @@ import { IconBell, IconCheck, IconTrash, IconX } from '@tabler/icons-react';
 import { IconButton } from './IconButton';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof IconButton> = {
   title: 'Atoms/IconButton',
@@ -75,6 +77,7 @@ export const Sizes: Story = {
 // ---- Actions ----
 
 export const PressedWithMouse: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onClick);
     await userEvent.click(button(canvasElement));
@@ -83,6 +86,7 @@ export const PressedWithMouse: Story = {
 };
 
 export const PressedTwice: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onClick);
     await userEvent.dblClick(button(canvasElement));
@@ -92,6 +96,7 @@ export const PressedTwice: Story = {
 };
 
 export const DisabledDoesNotFire: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { disabled: true },
   play: async ({ canvasElement, args, step }) => {
     clear(args.onClick);
@@ -107,6 +112,7 @@ export const DisabledDoesNotFire: Story = {
 };
 
 export const LoadingDoesNotFire: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { loading: true },
   play: async ({ canvasElement, args }) => {
     clear(args.onClick);
@@ -118,6 +124,7 @@ export const LoadingDoesNotFire: Story = {
 // ---- Keyboard ----
 
 export const PressedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onClick);
     await step('Tab focuses it', async () => {
@@ -133,6 +140,7 @@ export const PressedWithKeyboard: Story = {
 };
 
 export const FocusStaysAfterPress: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await userEvent.tab();
     await userEvent.keyboard('{Enter}');
@@ -144,6 +152,7 @@ export const FocusStaysAfterPress: Story = {
 // ---- Accessibility: the tooltip repeats the name for sighted keyboard users ----
 
 export const LabelShownOnFocus: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await userEvent.tab();
     await expect(button(canvasElement)).toHaveFocus();
@@ -152,6 +161,7 @@ export const LabelShownOnFocus: Story = {
 };
 
 export const LabelShownOnHover: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await userEvent.hover(button(canvasElement));
     await expect(await within(document.body).findByRole('tooltip')).toHaveTextContent('Delete comment');
@@ -159,6 +169,7 @@ export const LabelShownOnHover: Story = {
 };
 
 export const TooltipDismissedWithEscape: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, step }) => {
     await userEvent.tab();
     await within(document.body).findByRole('tooltip');
@@ -169,5 +180,33 @@ export const TooltipDismissedWithEscape: Story = {
     await step('focus stays on the button', async () => {
       await expect(button(canvasElement)).toHaveFocus();
     });
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_MODES } },
+  render: (args) => (
+    <StateGrid min={150}>
+      {(['subtle', 'filled', 'default'] as const).flatMap((variant) => [
+        <State key={variant} label={variant}>
+          <IconButton {...args} variant={variant} label={`Delete (${variant})`} />
+        </State>,
+        <State key={`${variant}-disabled`} label={`${variant} · disabled`}>
+          <IconButton {...args} variant={variant} disabled label={`Delete (${variant}, disabled)`} />
+        </State>,
+        <State key={`${variant}-loading`} label={`${variant} · loading`}>
+          <IconButton {...args} variant={variant} loading label={`Delete (${variant}, loading)`} />
+        </State>,
+      ])}
+      {(['sm', 'md', 'lg'] as const).map((size) => (
+        <State key={size} label={`size ${size}`}>
+          <IconButton {...args} size={size} label={`Delete (${size})`} />
+        </State>
+      ))}
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(12);
   },
 };

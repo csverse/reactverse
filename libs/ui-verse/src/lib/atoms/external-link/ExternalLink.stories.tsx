@@ -4,6 +4,8 @@ import { expect } from '@storybook/jest';
 import { ExternalLink } from './ExternalLink';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof ExternalLink> = {
   title: 'Atoms/ExternalLink',
@@ -46,6 +48,7 @@ export const InASentence: Story = {
 };
 
 export const OpensSafelyInANewTab: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(link(canvasElement)).toHaveAttribute('target', '_blank');
     await expect(link(canvasElement)).toHaveAttribute('rel', 'noopener noreferrer');
@@ -56,6 +59,7 @@ export const OpensSafelyInANewTab: Story = {
 // ---- Actions ----
 
 export const ReportsNavigation: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onNavigate);
     blockNavigation(link(canvasElement));
@@ -66,6 +70,7 @@ export const ReportsNavigation: Story = {
 };
 
 export const ReportsKeyboardActivation: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onNavigate);
     blockNavigation(link(canvasElement));
@@ -83,20 +88,38 @@ export const ReportsKeyboardActivation: Story = {
 // ---- Accessibility ----
 
 export const TellsScreenReadersAboutTheNewTab: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(link(canvasElement)).toHaveAccessibleName('Chromatic docs (opens in a new tab)');
   },
 };
 
 export const IconIsDecorative: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   },
 };
 
 export const ReachableByKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await userEvent.tab();
     await expect(link(canvasElement)).toHaveFocus();
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_MODES } },
+  render: (args) => (
+    <StateGrid min={240}>
+      <State label="with icon"><ExternalLink {...args} /></State>
+      <State label="without icon"><ExternalLink {...args} showIcon={false} /></State>
+      <State label="in a sentence"><p style={{ margin: 0 }}>Read the <ExternalLink {...args}>modes guide</ExternalLink> first.</p></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(3);
   },
 };

@@ -3,9 +3,11 @@ import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { FilterBar } from './FilterBar';
 import { parts } from '../../utils/storybook/parts';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const COUNTS = { all: 126, pending: 14, changed: 3, accepted: 98, denied: 1 };
 
@@ -16,7 +18,6 @@ const meta: Meta<typeof FilterBar> = {
   tags: ['autodocs'],
   argTypes: events({ onChange: 'Called with { query, status, tags } after every change, including Clear all filters. The object is always complete.' }),
   args: { onChange: spy('onChange') },
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof FilterBar>;
@@ -74,6 +75,7 @@ export const ManyTags: Story = {
 // ---- Actions ----
 
 export const TypedAQuery: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} />,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange);
@@ -88,6 +90,7 @@ export const TypedAQuery: Story = {
 };
 
 export const ChoseAStatus: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
@@ -98,6 +101,7 @@ export const ChoseAStatus: Story = {
 };
 
 export const FiltersCombine: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} defaultFilters={{ tags: ['Firefox'] }} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
@@ -109,6 +113,7 @@ export const FiltersCombine: Story = {
 };
 
 export const RemovedATag: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} defaultFilters={{ tags: ['Firefox', 'Safari'] }} />,
   play: async ({ canvasElement, args, step }) => {
     const canvas = within(canvasElement);
@@ -126,6 +131,7 @@ export const RemovedATag: Story = {
 };
 
 export const ClearedEverything: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} defaultFilters={{ query: 'tabs', status: 'pending', tags: ['Firefox'] }} />,
   play: async ({ canvasElement, args, step }) => {
     const canvas = within(canvasElement);
@@ -146,6 +152,7 @@ export const ClearedEverything: Story = {
 };
 
 export const FilterAgainAfterClearing: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} defaultFilters={{ query: 'tabs' }} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
@@ -158,6 +165,7 @@ export const FilterAgainAfterClearing: Story = {
 // ---- Keyboard and accessibility ----
 
 export const RemovedATagWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} defaultFilters={{ tags: ['Firefox'] }} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
@@ -168,6 +176,7 @@ export const RemovedATagWithKeyboard: Story = {
 };
 
 export const ClearedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} defaultFilters={{ query: 'tabs' }} />,
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
@@ -178,6 +187,7 @@ export const ClearedWithKeyboard: Story = {
 };
 
 export const IsASearchLandmark: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} />,
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('search', { name: 'Filter builds' })).toBeInTheDocument();
@@ -185,8 +195,52 @@ export const IsASearchLandmark: Story = {
 };
 
 export const ActiveTagsAreANamedList: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Bar {...args} defaultFilters={{ tags: ['Firefox', 'Safari'] }} />,
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('list', { name: 'Active filters' })).toBeInTheDocument();
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_RTL_MODES } },
+  render: (args) => (
+    <StateGrid min={520}>
+      <State label="no filters"><Bar {...args} /></State>
+      <State label="active filters"><Bar {...args} defaultFilters={{ query: 'tabs', status: 'pending', tags: ['Firefox', 'dark mode'] }} /></State>
+      <State label="many tags"><Bar {...args} defaultFilters={{ tags: ['Chrome', 'Firefox', 'Safari', 'Edge', 'dark mode', 'mobile', 'tablet'] }} /></State>
+      <State label="only search">
+        <FilterBar {...args}>
+          <FilterBar.Search />
+        </FilterBar>
+      </State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(4);
+  },
+};
+
+/** Right to left: the story itself is RTL, so searching and removing a tag are tested, not only photographed. */
+export const Rtl: Story = {
+  render: (args) => (
+    <RtlFrame>
+      <Bar {...args} defaultFilters={{ tags: ['Firefox'] }} />
+    </RtlFrame>
+  ),
+  play: async ({ canvasElement, args, step }) => {
+    clear(args.onChange);
+    await step('the search landmark lays out right to left', async () => {
+      await expect(getComputedStyle(within(canvasElement).getByRole('search')).direction).toBe('rtl');
+    });
+    await step('typing still reports the whole state', async () => {
+      await userEvent.type(search(canvasElement), 'tabs');
+      await expect(args.onChange).toHaveBeenLastCalledWith({ query: 'tabs', status: 'all', tags: ['Firefox'] });
+    });
+    await step('removing a tag still works', async () => {
+      await userEvent.click(within(canvasElement).getByRole('button', { name: 'Remove filter Firefox' }));
+      await expect(args.onChange).toHaveBeenLastCalledWith({ query: 'tabs', status: 'all', tags: [] });
+    });
   },
 };

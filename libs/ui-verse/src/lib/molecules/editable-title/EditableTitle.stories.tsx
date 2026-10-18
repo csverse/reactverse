@@ -2,9 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { within, userEvent, waitFor } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { EditableTitle } from './EditableTitle';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof EditableTitle> = {
   title: 'Molecules/EditableTitle',
@@ -12,7 +14,6 @@ const meta: Meta<typeof EditableTitle> = {
   tags: ['autodocs'],
   argTypes: events({ onSave: 'Called with the trimmed new title when it is saved. Not called on cancel, and not when the title is empty.' }),
   args: { value: 'Tabs keyboard navigation', onSave: spy('onSave') },
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof EditableTitle>;
@@ -46,6 +47,7 @@ export const LongTitle: Story = {
 // ---- Actions: saving ----
 
 export const EditedAndSaved: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args, step }) => {
     const canvas = within(canvasElement);
     clear(args.onSave);
@@ -69,6 +71,7 @@ export const EditedAndSaved: Story = {
 };
 
 export const SavedWithTheButton: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { startEditing: true },
   play: async ({ canvasElement, args }) => {
     clear(args.onSave);
@@ -80,6 +83,7 @@ export const SavedWithTheButton: Story = {
 };
 
 export const SavedTitleIsKeptForTheNextEdit: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await userEvent.click(editButton(canvasElement));
     await userEvent.clear(input(canvasElement));
@@ -93,6 +97,7 @@ export const SavedTitleIsKeptForTheNextEdit: Story = {
 // ---- Actions: cancelling ----
 
 export const CancelledWithEscape: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onSave);
     await userEvent.click(editButton(canvasElement));
@@ -111,6 +116,7 @@ export const CancelledWithEscape: Story = {
 };
 
 export const CancelledWithButton: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { startEditing: true },
   play: async ({ canvasElement, args }) => {
     clear(args.onSave);
@@ -122,6 +128,7 @@ export const CancelledWithButton: Story = {
 };
 
 export const NextEditStartsFromTheSavedTitle: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await userEvent.click(editButton(canvasElement));
     await userEvent.type(input(canvasElement), ' abandoned draft');
@@ -152,6 +159,7 @@ export const EmptyTitleIsRejected: Story = {
 };
 
 export const WhitespaceOnlyIsRejected: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { startEditing: true },
   play: async ({ canvasElement, args }) => {
     clear(args.onSave);
@@ -164,6 +172,7 @@ export const WhitespaceOnlyIsRejected: Story = {
 };
 
 export const ErrorClearsWhenTypingAgain: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { startEditing: true },
   play: async ({ canvasElement }) => {
     await userEvent.clear(input(canvasElement));
@@ -177,6 +186,7 @@ export const ErrorClearsWhenTypingAgain: Story = {
 // ---- Keyboard and accessibility ----
 
 export const EditButtonIsReachableByKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await userEvent.tab();
     await expect(editButton(canvasElement)).toHaveFocus();
@@ -186,8 +196,45 @@ export const EditButtonIsReachableByKeyboard: Story = {
 };
 
 export const FieldIsNamed: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { startEditing: true },
   play: async ({ canvasElement }) => {
     await expect(input(canvasElement)).toHaveAccessibleName('Build title');
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_RTL_MODES } },
+  render: (args) => (
+    <StateGrid min={360}>
+      <State label="viewing"><EditableTitle {...args} /></State>
+      <State label="editing"><EditableTitle {...args} startEditing /></State>
+      <State label="long title"><EditableTitle {...args} value="Redesign the checkout flow with saved payment methods and one-tap reorder for returning customers" /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(3);
+  },
+};
+
+/** Right to left: the story itself is RTL, so the edit and save flow is tested, not only photographed. */
+export const Rtl: Story = {
+  render: (args) => (
+    <RtlFrame>
+      <EditableTitle {...args} />
+    </RtlFrame>
+  ),
+  play: async ({ canvasElement, args, step }) => {
+    clear(args.onSave);
+    await step('Edit opens the field, laid out right to left', async () => {
+      await userEvent.click(editButton(canvasElement));
+      await expect(getComputedStyle(input(canvasElement)).direction).toBe('rtl');
+    });
+    await step('saving still reports the trimmed title', async () => {
+      await userEvent.clear(input(canvasElement));
+      await userEvent.type(input(canvasElement), 'العنوان الجديد{enter}');
+      await expect(args.onSave).toHaveBeenCalledWith('العنوان الجديد');
+    });
   },
 };

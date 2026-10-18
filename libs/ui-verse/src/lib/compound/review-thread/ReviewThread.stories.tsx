@@ -4,9 +4,11 @@ import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { ReviewThread } from './ReviewThread';
 import { parts } from '../../utils/storybook/parts';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const NOW = '2026-10-18T12:00:00Z';
 
@@ -47,7 +49,6 @@ const meta: Meta<typeof ReviewThread> = {
   }),
   args: { onReply: spy('onReply'), onResolveChange: spy('onResolveChange') },
   decorators: [(Story) => <div style={{ maxWidth: 560 }}><Story /></div>],
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof ReviewThread>;
@@ -97,6 +98,7 @@ export const LongConversation: Story = {
 // ---- Actions: replying ----
 
 export const ReplyAddsAComment: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement, args, step }) => {
     const canvas = within(canvasElement);
@@ -121,6 +123,7 @@ export const ReplyAddsAComment: Story = {
 };
 
 export const TwoRepliesInARow: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement, args }) => {
     clear(args.onReply);
@@ -134,6 +137,7 @@ export const TwoRepliesInARow: Story = {
 };
 
 export const MultiLineReply: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement, args }) => {
     clear(args.onReply);
@@ -144,6 +148,7 @@ export const MultiLineReply: Story = {
 };
 
 export const SendIsDisabledWhenBlank: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement, args, step }) => {
     clear(args.onReply);
@@ -165,6 +170,7 @@ export const SendIsDisabledWhenBlank: Story = {
 // ---- Actions: resolving ----
 
 export const ResolvingHidesTheReplyBox: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement, args, step }) => {
     const canvas = within(canvasElement);
@@ -187,6 +193,7 @@ export const ResolvingHidesTheReplyBox: Story = {
 };
 
 export const CommentsStayVisibleWhenResolved: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Resolve thread' }));
@@ -198,6 +205,7 @@ export const CommentsStayVisibleWhenResolved: Story = {
 // ---- Keyboard and accessibility ----
 
 export const RepliedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement, args, step }) => {
     clear(args.onReply);
@@ -218,6 +226,7 @@ export const RepliedWithKeyboard: Story = {
 };
 
 export const ThreadIsALabelledSection: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('region', { name: 'Review thread' })).toBeInTheDocument();
@@ -225,6 +234,7 @@ export const ThreadIsALabelledSection: Story = {
 };
 
 export const EveryCommentIsAnArticleNamedAfterItsAuthor: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('article', { name: 'Comment by Priya Raman' })).toBeInTheDocument();
@@ -233,8 +243,25 @@ export const EveryCommentIsAnArticleNamedAfterItsAuthor: Story = {
 };
 
 export const ReplyBoxHasAVisibleLabel: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: render(),
   play: async ({ canvasElement }) => {
     await expect(reply(canvasElement)).toHaveAccessibleName('Reply');
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_RTL_MODES } },
+  render: (args) => (
+    <StateGrid min={420}>
+      <State label="open"><Demo {...args} /></State>
+      <State label="resolved"><Demo {...args} defaultResolved /></State>
+      <State label="no comments yet"><Demo {...args} seed={[]} /></State>
+      <State label="single comment"><Demo {...args} seed={SEED.slice(0, 1)} /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(4);
   },
 };

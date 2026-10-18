@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { within } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { Timestamp } from './Timestamp';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 // A fixed "now" keeps snapshots identical on every run.
 const NOW = '2026-10-18T12:00:00Z';
@@ -49,6 +51,7 @@ export const Absolute: Story = {
 };
 
 export const MachineReadable: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { date: '2026-10-11T09:30:00Z' },
   play: async ({ canvasElement }) => {
     const time = canvasElement.querySelector('time');
@@ -58,6 +61,7 @@ export const MachineReadable: Story = {
 };
 
 export const AlwaysUTC: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { format: 'absolute', date: '2026-10-18T23:30:00Z' },
   play: async ({ canvasElement }) => {
     // The same instant reads the same for every viewer, whatever their timezone.
@@ -66,7 +70,31 @@ export const AlwaysUTC: Story = {
 };
 
 export const IsATimeElement: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('time')).toBeInTheDocument();
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_MODES } },
+  render: () => (
+    <StateGrid min={200}>
+      {[
+        ['just now', '2026-10-18T11:59:40Z'],
+        ['minutes ago', '2026-10-18T11:42:00Z'],
+        ['hours ago', '2026-10-18T07:00:00Z'],
+        ['yesterday', '2026-10-17T12:00:00Z'],
+        ['days ago', '2026-10-11T09:00:00Z'],
+        ['in the future', '2026-10-18T14:00:00Z'],
+      ].map(([label, date]) => (
+        <State key={label} label={label}><Timestamp date={date} now={NOW} /></State>
+      ))}
+      <State label="absolute"><Timestamp date="2026-10-11T09:30:00Z" now={NOW} format="absolute" /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(7);
   },
 };

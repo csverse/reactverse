@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { within } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { StatValue } from './StatValue';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 /** StatValue has no events, so its Actions panel stays empty by design. */
 const meta: Meta<typeof StatValue> = {
@@ -74,8 +76,29 @@ export const VeryLargeNumber: Story = {
   },
 };
 export const ArrowIsDecorative: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { delta: 4 },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_MODES } },
+  render: () => (
+    <StateGrid min={200}>
+      <State label="plain"><StatValue label="Snapshots" value={12480} /></State>
+      <State label="increase"><StatValue label="Snapshots" value={12480} delta={320} deltaLabel="vs last week" /></State>
+      <State label="drop is good"><StatValue label="Failed builds" value={3} delta={-5} goodWhen="down" deltaLabel="vs last week" /></State>
+      <State label="drop is bad"><StatValue label="Accepted" value={98} delta={-12} deltaLabel="vs last build" /></State>
+      <State label="rise is bad"><StatValue label="Failed builds" value={9} delta={6} goodWhen="down" /></State>
+      <State label="no change"><StatValue label="Snapshots" value={12480} delta={0} /></State>
+      <State label="percent"><StatValue label="Accepted" value={78} unit="percent" delta={4} /></State>
+      <State label="duration"><StatValue label="Build time" value={247} unit="seconds" delta={-31} goodWhen="down" /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(8);
   },
 };

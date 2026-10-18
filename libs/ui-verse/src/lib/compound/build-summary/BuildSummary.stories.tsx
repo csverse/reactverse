@@ -3,9 +3,11 @@ import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { BuildSummary } from './BuildSummary';
 import { parts } from '../../utils/storybook/parts';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof BuildSummary> = {
   title: 'Compound/BuildSummary',
@@ -14,7 +16,6 @@ const meta: Meta<typeof BuildSummary> = {
   tags: ['autodocs'],
   argTypes: events({ onView: 'On `BuildSummary.Heading`: called with the build number when View build is pressed. The button only shows when it is passed.' }),
   args: { status: 'pending', number: 481, branch: 'feature/tabs-keyboard-nav' },
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof BuildSummary>;
@@ -109,6 +110,7 @@ export const StatsOnly: Story = {
 // ---- Actions ----
 
 export const ViewPressed: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement }) => {
     clear(onView);
@@ -119,6 +121,7 @@ export const ViewPressed: Story = {
 };
 
 export const ViewReportsTheRightBuild: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} number={999} />,
   play: async ({ canvasElement }) => {
     clear(onView);
@@ -128,6 +131,7 @@ export const ViewReportsTheRightBuild: Story = {
 };
 
 export const ViewPressedWithKeyboard: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement }) => {
     clear(onView);
@@ -139,6 +143,7 @@ export const ViewPressedWithKeyboard: Story = {
 };
 
 export const NoViewButtonWithoutAHandler: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => (
     <BuildSummary {...args}>
       <BuildSummary.Heading />
@@ -152,6 +157,7 @@ export const NoViewButtonWithoutAHandler: Story = {
 // ---- Accessibility ----
 
 export const SectionIsNamedAfterTheBuild: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement }) => {
     await expect(within(section(canvasElement)).getByRole('heading', { name: /Build #481/ })).toBeInTheDocument();
@@ -160,6 +166,7 @@ export const SectionIsNamedAfterTheBuild: Story = {
 };
 
 export const HeadingIsLevelThree: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('heading', { level: 3 })).toBeInTheDocument();
@@ -167,10 +174,33 @@ export const HeadingIsLevelThree: Story = {
 };
 
 export const StatChangesAreSpokenInWords: Story = {
+  parameters: BEHAVIOUR_ONLY,
   render: (args) => <Full {...args} />,
   play: async ({ canvasElement }) => {
     // Up/Down is written out, so the arrows and colours are optional extras.
     await expect(within(canvasElement).getAllByText(/Down/).length).toBeGreaterThan(0);
     await expect(within(canvasElement).getAllByText(/Up/).length).toBeGreaterThan(0);
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_RTL_MODES } },
+  render: (args) => (
+    <StateGrid min={460}>
+      <State label="needs review"><Full {...args} /></State>
+      <State label="accepted"><Full {...args} status="accepted" number={482} branch="main" changes={0} /></State>
+      <State label="failed"><Full {...args} status="broken" number={477} branch="main" done={90} failed={36} changes={0} /></State>
+      <State label="in progress"><Full {...args} status="building" number={483} branch="fix/modal-focus-trap" done={31} changes={0} /></State>
+      <State label="minimal">
+        <BuildSummary {...args} number={484}>
+          <BuildSummary.Heading />
+          <BuildSummary.Progress done={63} total={126} />
+        </BuildSummary>
+      </State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(5);
   },
 };

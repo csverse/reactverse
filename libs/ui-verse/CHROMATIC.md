@@ -89,3 +89,20 @@ Every story in Atoms, Molecules and Compound has a `play` function, and every sp
 | Actions | `spy()` in `args`, `events()` in `argTypes` | Every callback is logged in Actions, listed under Events in docs, and asserted in `play` |
 
 Atoms with no events (LoadingIndicator, ShortcutKey, SnapshotProgress, StatValue, Timestamp) have an empty Actions panel by design.
+
+## Visual testing
+
+Chromatic photographs stories; it does not need separate "visual tests". What matters is *which* stories and in *which modes*, because every snapshot counts.
+
+| Kind of story | Modes | Why |
+| --- | --- | --- |
+| `StatesMatrix` (one per component) | Light and dark across mobile, tablet and desktop (5). Directional components also get right-to-left (7). | One snapshot shows every state side by side, so a regression in any state is caught at every width and direction. |
+| A distinct visual state (`Default`, `Disabled`, `LongLabel`, ...) | Light and dark (2). | Gives a named, reviewable snapshot per state without paying for every width. |
+| `Rtl` (SearchField, StatusFilter, BuildsPagination, EditableTitle, FilterBar) | Light and dark (2). | The story itself is right-to-left, and its `play` function checks the behaviour as well as the look. |
+| Behaviour only (keyboard, naming, callbacks) | Not photographed (`BEHAVIOUR_ONLY`). | Looks the same as another story. Its `play` function still runs in `npm run test-storybook`. |
+
+Rule of thumb: add a snapshot only for a state that looks different. If it only behaves differently, give it `parameters: BEHAVIOUR_ONLY`.
+
+Direction is a toolbar global (**Direction**: ltr / rtl) as well as a Chromatic mode, so you can flip any story to right-to-left while developing. Mantine's `DirectionProvider` is remounted when it changes.
+
+Not covered: forced-colours and reduced-motion variants. Those need browser emulation, and I could not confirm Chromatic's modes offer it for this setup. Say so if you want to look into it.

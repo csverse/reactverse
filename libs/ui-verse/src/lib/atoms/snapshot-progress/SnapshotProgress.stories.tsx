@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { within } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { SnapshotProgress } from './SnapshotProgress';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 /** SnapshotProgress has no events, so its Actions panel stays empty by design. */
 const meta: Meta<typeof SnapshotProgress> = {
@@ -54,21 +56,42 @@ export const NoSnapshotsYet: Story = {
   },
 };
 export const Overcounted: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { done: 130, total: 126 },
   play: async ({ canvasElement }) => {
     await expect(bar(canvasElement)).toHaveAttribute('aria-valuenow', '100');
   },
 };
 export const RoundsToTheNearestPercent: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { done: 2, total: 3 },
   play: async ({ canvasElement }) => {
     await expect(bar(canvasElement)).toHaveAttribute('aria-valuenow', '67');
   },
 };
 export const AlmostThere: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { done: 125, total: 126 },
   play: async ({ canvasElement }) => {
     // 99.2% rounds to 99, not 100, so the bar never claims to be done early.
     await expect(bar(canvasElement)).toHaveAttribute('aria-valuenow', '99');
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_MODES } },
+  render: () => (
+    <StateGrid min={280}>
+      <State label="not started"><SnapshotProgress done={0} total={126} /></State>
+      <State label="a quarter"><SnapshotProgress done={31} total={126} /></State>
+      <State label="in progress"><SnapshotProgress done={98} total={126} /></State>
+      <State label="complete"><SnapshotProgress done={126} total={126} /></State>
+      <State label="with failures"><SnapshotProgress done={120} total={126} failed={6} /></State>
+      <State label="no snapshots"><SnapshotProgress done={0} total={0} /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(6);
   },
 };

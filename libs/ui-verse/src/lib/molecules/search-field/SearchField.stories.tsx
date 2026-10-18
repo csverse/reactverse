@@ -2,9 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { SearchField } from './SearchField';
-import { RESPONSIVE_MODES } from '../../utils/storybook/chromatic';
 import { events } from '../../utils/storybook/events';
 import { spy, clear } from '../../utils/storybook/spy';
+import { StateGrid, State } from '../../utils/storybook/StateGrid';
+import { RtlFrame } from '../../utils/storybook/RtlFrame';
+import { BEHAVIOUR_ONLY, MATRIX_MODES, MATRIX_RTL_MODES } from '../../utils/storybook/chromatic';
 
 const meta: Meta<typeof SearchField> = {
   title: 'Molecules/SearchField',
@@ -16,7 +18,6 @@ const meta: Meta<typeof SearchField> = {
   }),
   args: { onChange: spy('onChange'), onSubmit: spy('onSubmit') },
   decorators: [(Story) => <div style={{ maxWidth: 380 }}><Story /></div>],
-  parameters: { chromatic: { modes: RESPONSIVE_MODES } },
 };
 export default meta;
 type Story = StoryObj<typeof SearchField>;
@@ -59,6 +60,7 @@ export const CustomLabel: Story = {
 // ---- Actions: typing and submitting ----
 
 export const TypedAndSubmitted: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange, args.onSubmit);
     await step('typing reports each change', async () => {
@@ -78,6 +80,7 @@ export const TypedAndSubmitted: Story = {
 };
 
 export const SubmittingEmptyText: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onSubmit);
     box(canvasElement).focus();
@@ -88,6 +91,7 @@ export const SubmittingEmptyText: Story = {
 };
 
 export const TypingDoesNotSubmit: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onSubmit);
     await userEvent.type(box(canvasElement), 'tabs');
@@ -96,6 +100,7 @@ export const TypingDoesNotSubmit: Story = {
 };
 
 export const SpacesAreKept: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
     await userEvent.type(box(canvasElement), 'a b');
@@ -106,6 +111,7 @@ export const SpacesAreKept: Story = {
 // ---- Actions: clearing ----
 
 export const ClearedWithButton: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { defaultValue: 'main' },
   play: async ({ canvasElement, args, step }) => {
     clear(args.onChange);
@@ -124,6 +130,7 @@ export const ClearedWithButton: Story = {
 };
 
 export const ClearedWithEscape: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { defaultValue: 'main' },
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
@@ -135,6 +142,7 @@ export const ClearedWithEscape: Story = {
 };
 
 export const EscapeOnEmptyDoesNothing: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement, args }) => {
     clear(args.onChange);
     box(canvasElement).focus();
@@ -144,6 +152,7 @@ export const EscapeOnEmptyDoesNothing: Story = {
 };
 
 export const ClearButtonOnlyWhenThereIsText: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(clearButton(canvasElement)).toBeNull();
     await userEvent.type(box(canvasElement), 'a');
@@ -154,6 +163,7 @@ export const ClearButtonOnlyWhenThereIsText: Story = {
 // ---- Keyboard and accessibility ----
 
 export const TabOrder: Story = {
+  parameters: BEHAVIOUR_ONLY,
   args: { defaultValue: 'main' },
   play: async ({ canvasElement, step }) => {
     await step('Tab goes to the field first', async () => {
@@ -168,7 +178,49 @@ export const TabOrder: Story = {
 };
 
 export const IsNamedForScreenReaders: Story = {
+  parameters: BEHAVIOUR_ONLY,
   play: async ({ canvasElement }) => {
     await expect(box(canvasElement)).toHaveAccessibleName('Search builds');
+  },
+};
+
+export const StatesMatrix: Story = {
+  parameters: { chromatic: { modes: MATRIX_RTL_MODES } },
+  render: (args) => (
+    <StateGrid min={300}>
+      <State label="empty"><SearchField {...args} /></State>
+      <State label="with text"><SearchField {...args} defaultValue="feature/tabs-keyboard-nav" /></State>
+      <State label="long text"><SearchField {...args} defaultValue="feature/redesign-checkout-flow-with-saved-payment-methods" /></State>
+      <State label="disabled"><SearchField {...args} defaultValue="main" disabled /></State>
+      <State label="custom placeholder"><SearchField {...args} label="Search reviewers" placeholder="Name or email" /></State>
+    </StateGrid>
+  ),
+  play: async ({ canvasElement }) => {
+    // One caption per state: if a state disappears from the matrix, this fails.
+    await expect(canvasElement.querySelectorAll('[data-state]')).toHaveLength(5);
+  },
+};
+
+/** Right to left: the story itself is RTL, so keyboard and clearing are tested, not only photographed. */
+export const Rtl: Story = {
+  render: (args) => (
+    <RtlFrame>
+      <SearchField {...args} />
+    </RtlFrame>
+  ),
+  play: async ({ canvasElement, args, step }) => {
+    clear(args.onChange);
+    await step('the field lays out right to left', async () => {
+      await expect(getComputedStyle(box(canvasElement)).direction).toBe('rtl');
+    });
+    await step('typing still reports the text', async () => {
+      await userEvent.type(box(canvasElement), 'tabs');
+      await expect(args.onChange).toHaveBeenLastCalledWith('tabs');
+    });
+    await step('the clear button still empties the field and returns focus', async () => {
+      await userEvent.click(clearButton(canvasElement) as HTMLElement);
+      await expect(box(canvasElement)).toHaveValue('');
+      await expect(box(canvasElement)).toHaveFocus();
+    });
   },
 };
