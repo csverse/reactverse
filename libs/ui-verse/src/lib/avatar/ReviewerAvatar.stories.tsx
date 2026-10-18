@@ -35,20 +35,21 @@ const meta: Meta<typeof ReviewerAvatar> = {
   argTypes: events({
       onClick: "Called with the reviewer's name when the avatar is clicked. Passing it turns the avatar into a button.",
   }),
-  args: { name: 'Priya Raman', src: TEAM[0].src },
+  args: { name: 'Priya Raman' },
   parameters: figma('2:2'),
 };
 export default meta;
 type Story = StoryObj<typeof ReviewerAvatar>;
 
 export const WithImage: Story = {
+  args: { src: TEAM[0].src },
   play: async ({ canvasElement }) => {
     const avatar = within(canvasElement).getAllByRole('img', { name: 'Priya Raman' });
     await expect(avatar.length).toBeGreaterThan(0);
   },
 };
 export const InitialsFallback: Story = {
-  args: { name: 'Mei Lin', src: undefined },
+  args: { name: 'Mei Lin' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole('img', { name: 'Mei Lin' })).toBeVisible();
@@ -64,12 +65,12 @@ export const BrokenImage: Story = {
   },
 };
 export const SingleName: Story = {
-  args: { name: 'Hana', src: undefined },
+  args: { name: 'Hana' },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText('H')).toBeVisible();
   },
 };
-export const Large: Story = { args: { size: 96 } };
+export const Large: Story = { args: { size: 96, src: TEAM[0].src } };
 
 export const Stack: StoryObj<typeof ReviewerStack> = {
   render: (args) => <ReviewerStack {...args} />,
@@ -96,7 +97,7 @@ export const StackOverflow: StoryObj<typeof ReviewerStack> = {
 
 /** A clickable avatar, e.g. to open the reviewer's profile. */
 export const Clickable: Story = {
-  args: { name: 'Mei Lin', src: undefined, onClick: spy('onClick') },
+  args: { name: 'Mei Lin', onClick: spy('onClick') },
   play: async ({ canvasElement, args }) => {
     clear(args.onClick);
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Mei Lin' }));

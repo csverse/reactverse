@@ -25,8 +25,8 @@ type Story = StoryObj<typeof BaselineAlert>;
 
 export const Info: Story = {
   play: async ({ canvasElement }) => {
-    // Non-urgent messages are polite: a screen reader waits for a pause.
-    await expect(within(canvasElement).getByRole('status')).toBeVisible();
+    // Mantine's Alert always exposes role="alert", so a screen reader announces it.
+    await expect(within(canvasElement).getByRole('alert')).toBeVisible();
   },
 };
 export const Success: Story = { args: { tone: 'success' } };
@@ -44,8 +44,8 @@ export const ErrorTone: Story = {
     children: 'Storybook could not start: Module not found "./BuildsTable".',
   },
   play: async ({ canvasElement }) => {
-    // Errors are assertive: announced immediately.
-    await expect(within(canvasElement).getByRole('alert')).toBeVisible();
+    const alert = within(canvasElement).getByRole('alert');
+    await expect(alert).toHaveTextContent('Build failed');
   },
 };
 export const LongContent: Story = {

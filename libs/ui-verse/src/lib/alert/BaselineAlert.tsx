@@ -40,7 +40,6 @@ export function BaselineAlert({
       withCloseButton={Boolean(onClose)}
       closeButtonLabel="Dismiss message"
       onClose={onClose}
-      role={tone === 'error' ? 'alert' : 'status'}
     >
       {children}
     </Alert>

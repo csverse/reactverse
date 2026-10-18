@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { within, userEvent } from '@storybook/testing-library';
+import { within, userEvent, waitFor } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { BrowserMatrix, BrowserResult } from './BrowserMatrix';
 import { events } from '../utils/storybook/events';
@@ -69,8 +69,11 @@ export const AnimatedExpand: Story = {
   args: { transitionDuration: 200 },
   parameters: { chromatic: { pauseAnimationAtEnd: true, delay: 300 } },
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: /Firefox/ }));
-    await expect(await within(canvasElement).findByText(/3 snapshots differ/)).toBeVisible();
+    const control = within(canvasElement).getByRole('button', { name: /Firefox/ });
+    await userEvent.click(control);
+    // Check state and presence, not visibility: the panel is mid-transition here.
+    await waitFor(() => expect(control).toHaveAttribute('aria-expanded', 'true'));
+    await expect(await within(canvasElement).findByText(/3 snapshots differ/)).toBeInTheDocument();
   },
 };
 

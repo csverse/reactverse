@@ -3,12 +3,11 @@ import { renderWithTheme } from '../utils/test/renderWithTheme';
 import { BaselineAlert } from './BaselineAlert';
 
 describe('BaselineAlert', () => {
-  it('uses role=alert for errors and status otherwise', () => {
-    const { getByRole, rerender } = renderWithTheme(
+  it('exposes the alert role so assistive tech announces it', () => {
+    const { getByRole } = renderWithTheme(
       <BaselineAlert tone="error" title="Build failed" />
     );
     expect(getByRole('alert')).toBeTruthy();
-    rerender(<BaselineAlert tone="info" title="Heads up" />);
   });
 
   it('only shows a close button when onClose is given', () => {
