@@ -1,10 +1,10 @@
-import { render } from '@testing-library/react';
+import { renderWithTheme } from '../utils/test/renderWithTheme';
 
 import Image from './image';
 
 describe('Image', () => {
   it('should render successfully', () => {
-    const { baseElement } = render(<Image />);
+    const { baseElement } = renderWithTheme(<Image />);
     expect(baseElement).toBeTruthy();
   });
 });

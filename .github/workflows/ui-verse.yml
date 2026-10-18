@@ -32,29 +32,29 @@ jobs:
       - run: npm ci
       - uses: nrwl/nx-set-shas@v4
 
-      - name: Prebuild Storybook Docs
-        if: contains(github.event.head_commit.message, '--publish=storybook-chromatic')
-        run: npm run build-storybook
+      # Every push and PR builds Storybook, runs play functions, then snapshots.
+      # --stats-json lets Chromatic's TurboSnap skip stories your diff cannot affect.
+      - name: Build Storybook
+        run: npm run build-storybook:turbosnap
 
-      - name: Publish to Chromatic with docs
-        if: contains(github.event.head_commit.message, '--publish=storybook-chromatic')
-        uses: chromaui/action@latest
-        with:
-          workingDir: libs/ui-verse
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          storybookBuildDir : storybook-static
+      - name: Install Playwright browser for the test-runner
+        run: npx playwright install --with-deps chromium
 
-      - name: Prebuild Storybook
-        if: contains(github.event.head_commit.message, '--publish=ui-verse --version=')
-        run: npm run build-storybook
+      - name: Run interaction tests (play functions)
+        run: >
+          npx concurrently -k -s first -n "SB,TEST"
+          "npx http-server libs/ui-verse/storybook-static --port 6006 --silent"
+          "npx wait-on tcp:127.0.0.1:6006 && npm run test-storybook"
 
       - name: Publish to Chromatic
-        if: contains(github.event.head_commit.message, '--publish=ui-verse --version=')
         uses: chromaui/action@latest
         with:
           workingDir: libs/ui-verse
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          storybookBuildDir : storybook-static
+          storybookBuildDir: storybook-static
+          onlyChanged: true
+          exitZeroOnChanges: true
+          autoAcceptChanges: master
 
       - name: Prebuild ui-verse
         if: contains(github.event.head_commit.message, '--publish=ui-verse --version=')

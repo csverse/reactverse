@@ -10,7 +10,8 @@ import Template from '../utils/hoc/Template.tsx';
 <Meta title="Introduction/Welcome" />
 
 <Template>
-  <div className='p-relative w-1p h-1p mb-1x'>
+  {/* Docs pages are light; this portfolio page keeps its own dark surface. */}
+  <div className='p-relative w-1p h-1p mb-1x' style={{ background: 'rgb(34, 36, 37)', color: '#fff' }}>
     <HeaderSection />
     <div className=''>
     {/* TODO projects */}
