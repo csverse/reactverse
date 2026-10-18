@@ -96,9 +96,14 @@ On a pull request (with the CI from step 8):
 
 1. In GitHub open **Settings > Secrets and variables > Actions**.
 2. Add a repository secret named `CHROMATIC_PROJECT_TOKEN` with the token from step 4.
-3. Push a branch and open a PR. `.github/workflows/ui-verse.yml` will now:
-   build Storybook, run all `play` functions with the test-runner, and publish to Chromatic
-   (every story, each build). Changes on `master` are auto-accepted.
+3. Chromatic only runs when the commit message contains one of these (this is how the
+   repo worked originally):
+   - `--publish=storybook-chromatic`: builds Storybook and publishes it to Chromatic.
+   - `--publish=ui-verse --version=<x.y.z>`: builds Storybook, publishes to Chromatic,
+     then builds and publishes `ui-verse` to npm.
+
+   Example: `git commit -m "Add showcase components --publish=storybook-chromatic"`, then push to `master`.
+   Commits without those flags skip Chromatic.
 
 ## 9. Figma (optional, skipped for now)
 
